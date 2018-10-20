@@ -1,0 +1,6 @@
+(setq make-backup-files nil)
+(menu-bar-mode -1)
+(if (boundp 'tool-bar-mode)
+    (ignore-errors (tool-bar-mode -1)))
+(fset 'yes-or-no-p 'y-or-n-p)
+(setq visible-bell t)
