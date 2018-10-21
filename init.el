@@ -1,5 +1,5 @@
 ;;--------------------------  -*- coding: utf-8; mode: emacs-lisp; -*-
-;; .emacs                          Javier Donaire <jdonaire@gmail.com>
+;; ~/.emacs.d/init.el              Javier Donaire <jdonaire@gmail.com>
 ;;--------------------------------------------------------------------
 
 ;;--------------------------------------------------------------------
@@ -13,23 +13,39 @@
           org-replace-disputed-keys t
           initial-scratch-message nil))
 
+;; add to the load-path local directory for dropped-in elisp files
+(add-to-list 'load-path (locate-user-emacs-file "elisp/"))
 
-;;--------------------------------------------------------------------
-;;  loading of libraries
-;;--------------------------------------------------------------------
-
-;; add directory to the load-path
-(add-to-list 'load-path "~/.emacs.d/lisp")
+;; ensure ~/.emacs.d/cache directory exists
+(let ((dir (locate-user-emacs-file "cache/")))
+  (when (not (file-directory-p dir))
+    (make-directory dir nil)))
 
 ;; elpa
 (if (>= emacs-major-version 24)
     (progn (require 'package)
+           ;; prevent writing package-selected-packages custom variable
+           (defun package--save-selected-packages (&optional value) nil)
+           ;; add repositories
            (add-to-list 'package-archives
                         '("melpa-stable" . "http://stable.melpa.org/packages/") t)
            (add-to-list 'package-archives
                         '("melpa" . "http://melpa.org/packages/") t)
+           (add-to-list 'package-archives
+			'("org" . "http://orgmode.org/elpa/") t)
            (package-initialize)
            (setq package-enable-at-startup nil)))
+
+;; ensure use-package is installed and configure it
+(unless (package-installed-p 'use-package)
+  (package-refresh-contents)
+  (package-install 'use-package))
+(setq use-package-verbose t)
+
+
+;;--------------------------------------------------------------------
+;;  loading of libraries
+;;--------------------------------------------------------------------
 
 ;; workaround to make dead keys work
 ;; it also works deleting envvar: XMODIFIERS= emacs
@@ -41,289 +57,228 @@
 ;; load dired-x to expand dired capabilities
 (require 'dired-x)
 
-;; load library for global tags
-;;
-;; it is recommended to compile upstream package, instead of using the
-;; obsolete Debian/Ubuntu packages, and copy gtags.el to .emacs.d.
-;;
-;; it needs to be configured before library loading
-;; (progn
-;;   (setq gtags-suggested-key-mapping nil
-;;         gtags-use-old-key-map t
-;;         gtags-disable-pushy-mouse-mapping t)
-;;   (if (require 'gtags nil t)
-;;       (progn
-;;         (global-set-key (kbd "M-.") 'gtags-find-tag)
-;;         (global-set-key (kbd "C-.") 'gtags-find-rtag)
-;;         (global-set-key (kbd "M-*") 'gtags-pop-stack))))
+;; used by use-package to remove mode line displays of minor modes
+(use-package diminish :ensure t)
 
-;; [elpa] third party emacs mode for using global tags
-;; https://github.com/leoliu/ggtags
-(if (require 'ggtags nil t)
-    (progn
-      (global-set-key (kbd "C-.") 'ggtags-find-reference)))
-
-;; load and configure the w3m interface for emacs
-(if (require 'w3m nil t)
-    (progn
-      ;(setq browse-url-browser-function 'w3m-browse-url)
-      (setq w3m-make-new-session t)
-      (define-key w3m-mode-map [left] 'backward-char)
-      (define-key w3m-mode-map [right] 'forward-char)
-      (define-key w3m-mode-map [up] 'previous-line)
-      (define-key w3m-mode-map [down] 'next-line)
-      (eval-after-load 'w3m
-        '(progn
-           (define-key w3m-mode-map "q" 'w3m-previous-buffer)
-           (define-key w3m-mode-map "w" 'w3m-next-buffer)
-           (define-key w3m-mode-map "x" 'w3m-close-window)
-           (defun w3m-open-current-page-in-firefox ()
-             "Open the current url in mozilla firefox."
-             (interactive)
-             (browse-url-firefox w3m-current-url))
-           (defun w3m-open-link-or-image-in-firefox ()
-             "Open the current link or image in firefox."
-             (interactive)
-             (browse-url-firefox (or (w3m-anchor)
-                                     (w3m-image))))
-           (define-key w3m-mode-map "f" 'w3m-open-current-page-in-firefox)
-           (define-key w3m-mode-map "f" 'w3m-open-link-or-image-in-firefox)))
-      ;; load gtk-look, like devhelp but inside emacs
-      (require 'gtk-look nil t)))
-
-;; load and configure graphviz mode
-(if (require 'graphviz-dot-mode nil t)
-    (setq graphviz-dot-auto-indent-on-braces nil
-          graphviz-dot-auto-indent-on-newline nil
-          graphviz-dot-auto-indent-on-semi nil))
-
-;; load interactive ruby mode, so I can execute run-ruby directly
-(require 'inf-ruby nil t)
+;; third party emacs mode for using global tags
+(use-package ggtags :ensure t
+  :bind ("C-." . ggtags-find-reference))
 
 ;; load markdown edition mode and configure it to use pandoc
 ;; inspired by https://gist.github.com/fredRos/0e3a845de95ec654538f
-(if (require 'markdown-mode nil t)
-    (progn (autoload 'markdown-mode "markdown-mode")
-           (setq markdown-command "pandoc -f markdown -t html5 -c ~/.emacs.d/local/github-pandoc.css --self-contained --standalone")
-;           (add-to-list 'auto-mode-alist '("\\.md\\'" . markdown-mode))
-           ; (add-hook 'markdown-mode-hook (lambda () (visual-line-mode t)))
-           ))
+(use-package markdown-mode :ensure t
+  :defer t
+  :config
+  (setq markdown-command (concat "pandoc -f markdown -t html5 -c "
+                                 (locate-user-emacs-file "res/github-pandoc.css")
+                                 " --self-contained --standalone")))
 
 ;; same name buffers are identified by its directory instead of <n>
-(if (require 'uniquify nil t)
-    (setq uniquify-buffer-name-style 'post-forward-angle-brackets))
+(use-package uniquify
+  :config (setq uniquify-buffer-name-style 'post-forward-angle-brackets))
 
-;; [elpa] use ws-butler if available, or ethan-wspace or just show whitespace
-;; ws-butler: remove trailing whitespace on save only on the touched lines
-(if (require 'ws-butler nil t)
-    (ws-butler-global-mode 1)
-  ;; ethan-wspace: hide and remove trailing whitespaces on saving if the file was clean on load,
-  ;;               or show it and keep untouched if it was dirty
-  (if (require 'ethan-wspace nil t)
-      (progn (setq mode-require-final-newline nil)
-             (global-ethan-wspace-mode 1)
-             ;; remove require-final-newline warning for ruby-mode, only needed for emacs < 24.4
-             ;; https://github.com/glasserc/ethan-wspace/issues/22
-             (defadvice ruby-mode-variables (after reset-final-newline)
-               "Reset final-newline that ruby-mode enforces but conflicts with ethan-wspace."
-               (setq require-final-newline nil)
-               (setq mode-require-final-newline nil))
-             (ad-activate 'ruby-mode-variables))
-    (progn (add-hook 'c-mode-common-hook (lambda () (setq show-trailing-whitespace t)))
-           (add-hook 'makefile-mode-hook (lambda () (setq show-trailing-whitespace t)))
-           (setq require-final-newline 'query))))
+;; remove trailing whitespace on save only on the touched lines
+(use-package ws-butler :ensure t
+  :config (ws-butler-global-mode 1))
 
 ;; remember point position on closing files
-(if (require 'saveplace nil t)
-    (progn (setq save-place-file "~/.emacs.d/saveplace")
-           (setq-default save-place t)))
+(use-package saveplace
+  :config
+  (setq save-place-file (locate-user-emacs-file "cache/places")
+        save-place-forget-unreadable-files nil)
+  (if (>= emacs-major-version 25)
+      (save-place-mode 1)
+    (setq-default save-place t)))
 
-;; eldoc for c-like modes, not activated by default because it's slow
-;; can be activated (de-) manually with c-turn-on-eldoc-mode (eldoc-mode)
-;(if
-    (require 'c-eldoc nil t)
-;    (add-hook 'c-mode-common-hook 'c-turn-on-eldoc-mode))
-
-;; inserts (open/close) parens by pressing twice ./- keys()
-(if (require 'electric-dot-and-dash nil t)
-    (progn (setq electric-dot-and-dash-max-delay 0.2)
-           (local-set-key "." 'electric-dot-and-dash-dot)
-           (local-set-key "-" 'electric-dot-and-dash-dash)))
-
-;; 2012-05-28  deactivated, as it makes emacs --daemon to fail start
-;; starts emacs server for the chromium extension 'edit with emacs'
-;; https://chrome.google.com/extensions/detail/ljobjlafonikaiipfkggjbhkghgicgoh
-;; (if (and (daemonp) (locate-library "edit-server"))
-;;     (progn
-;;       (require 'edit-server)
-;;       (edit-server-start)))
-
-;; [elpa] use modeline indication instead of narrow scrollbars if available
-(if (require 'sml-modeline nil t)
-    (progn (sml-modeline-mode 1)
-           (if (boundp 'scroll-bar-mode)
-               (scroll-bar-mode -1)))
-  (progn (if (boundp 'scroll-bar-mode)
-             (scroll-bar-mode 1))
-         (add-to-list 'default-frame-alist '(scroll-bar-width . 8))))
-
-;; kill text between two delimiters, preserving structure
-(if (require 'delim-kill nil t)
-    (global-set-key (kbd "C-c d") 'delim-kill))
-
-;; autopair, inserts complementary delimiters automatically
-;; (if (require 'autopair nil t)
-;;     (progn
-;;       (autopair-global-mode 1)
-;;       ;(setq autopair-autowrap t)
-;;       ))
+;; use modeline indication instead of scrollbars
+(use-package sml-modeline :ensure t
+  :config
+  (sml-modeline-mode 1)
+  (if (boundp 'scroll-bar-mode)
+      (scroll-bar-mode -1)))
 
 ;; M-x rainbow-mode to print color strings with colored background and
-;; enable it for CSS files
-(if (require 'rainbow-mode nil t)
-    (add-hook 'css-mode-hook 'rainbow-mode))
+(use-package rainbow-mode :ensure t
+  :defer t
+  :hook css-mode)
 
-;; M-x rainbow-delimiters shows parenthesis with different colors
-(require 'rainbow-delimiters nil t)
-
-;; ;; arduino-mode
-;; (require 'arduino-mode nil t)
-
-;; ruby gem debugger
-;; (add-to-list 'load-path "/var/lib/gems/1.9.1/gems/debugger-1.2.0/emacs/")
-;; (require 'rdebug nil t)
+;; Show parenthesis with different colors
+(use-package rainbow-delimiters :ensure t
+  :hook (prog-mode . rainbow-delimiters-mode))
 
 ;; js2-mode for javascript
-;; (if (require 'js2-mode nil t)
-;;     (setq js2-basic-offset 2
-;;           js2-bounce-indent-p t))
+(use-package js2-mode :ensure t
+  :defer t
+  :config
+  (setq js-basic-indent 2)
+  (setq-default js2-basic-indent 2
+                js2-basic-offset 2
+                js2-auto-indent-p t
+                js2-bounce-indent-p t
+                js2-cleanup-whitespace t
+                js2-enter-indents-newline t
+                js2-indent-on-enter-key t
+                js2-global-externs (list "window" "module" "require" "console" "JSON" "jQuery" "$"))
+  (add-to-list 'auto-mode-alist '("\\.js$" . js2-mode)))
 
-;; js-mode for javascript
-(if (require 'js nil t)
-    (setq js-indent-level 4))
+;; web-mode for html
+(use-package web-mode :ensure t
+  :defer t
+  :config
+  (add-to-list 'auto-mode-alist '("\\.erb\\'" . web-mode))
+  (add-to-list 'auto-mode-alist '("\\.html\\'" . web-mode))
+  (add-to-list 'auto-mode-alist '("\\.xhtml\\'" . web-mode))
+  (setq web-mode-markup-indent-offset 2
+        web-mode-css-indent-offset 2
+        web-mode-code-indent-offset 2))
 
-;; associate file extensions to web-mode
-(if (require 'web-mode nil t)
-    (progn
-      (add-to-list 'auto-mode-alist '("\\.erb\\'" . web-mode))
-      (add-to-list 'auto-mode-alist '("\\.html\\'" . web-mode))
-      (add-to-list 'auto-mode-alist '("\\.xhtml\\'" . web-mode))
-      (setq web-mode-markup-indent-offset 2
-            web-mode-css-indent-offset 2
-            web-mode-code-indent-offset 2)))
+;; ledger-mode
+(use-package ledger-mode :ensure t
+  :defer t
+  :config
+  (setq ledger-default-date-format "%Y-%m-%d"
+        ledger-reconcile-default-commodity "EUR"
+        ledger-use-iso-dates t
+        ledger-narrow-on-reconcile nil
+        ledger-highlight-xact-under-point nil))
 
-;; zoom-frm to zoom text by frame instead of by buffer
-(if (and (require 'frame-fns nil t)
-         (require 'frame-cmds nil t)
-         (require 'zoom-frm nil t))
-    (progn
-      (define-key ctl-x-map [(control ?+)] 'zoom-in/out)
-      (define-key ctl-x-map [(control ?-)] 'zoom-in/out)
-      (define-key ctl-x-map [(control ?=)] 'zoom-in/out)
-      (define-key ctl-x-map [(control ?0)] 'zoom-in/out)))
+;; org-mode
+(use-package org
+  :ensure org-plus-contrib
+  :pin org
+  :mode ("\\.org$" . org-mode)
+  :config
+  ;; load additional export methods
+  (require 'ox-odt nil t)
+  (require 'ox-md nil t)
+  (require 'ox-freemind nil t)
+  (require 'ox-texinfo nil t))
 
-;; ;; [elpa] load and use smartparens so begin/end (ruby, etc) blocks are highlighted
-;; (if (require 'smartparens-config nil t)
-;;     (show-smartparens-global-mode +1))
+;; load git-gutter-fringe that marks changes in the left bar
+(use-package git-gutter-fringe :ensure t
+  :if (boundp 'fringe-mode)
+  :diminish (git-gutter-mode . "")
+  :config
+  (global-git-gutter-mode +1))
 
-;; [elpa] load textile mode
-(if (require 'textile-mode nil t)
-    (add-hook 'textile-mode-hook (lambda () (visual-line-mode t))))
+;; move current line or region with M-up / M-down
+(use-package move-text :ensure t
+  :if (>= emacs-major-version 25)
+  :config
+  (move-text-default-bindings))
 
-;; [elpa] launch edit-server integration with google chrome
-(when (and (require 'edit-server nil t) (daemonp))
-  (progn (edit-server-start)
-         (setq edit-server-url-major-mode-alist
-               '(("orbiweb\\.orbital-aerospace\\.com\\/redmine" . textile-mode)))
-         ))
+;; configure recentf to increase the history of ivy virtual buffers
+(use-package recentf
+  :config
+  (setq recentf-save-file (locate-user-emacs-file "cache/recentf"))
+  (setq recentf-max-saved-items 200))
 
-;; [elpa] load ledger mode
-(if (require 'ledger-mode nil t)
-    (progn
-      (setq ledger-default-date-format "%Y-%m-%d")
-      (setq ledger-reconcile-default-commodity "EUR")
-      (setq ledger-use-iso-dates t)
-      (setq ledger-narrow-on-reconcile nil)
-      (setq ledger-highlight-xact-under-point nil)))
+;; load and configure ivy/swiper/counsel completion framework
+(use-package wgrep :ensure t)
+(use-package hydra :ensure t)
+(use-package counsel :ensure t)
+(use-package ivy-hydra :ensure t)
+(use-package smex :ensure t
+  :config
+  (setq smex-save-file (locate-user-emacs-file "cache/smex-items")))
+(use-package ivy :ensure t
+  :diminish (ivy-mode . "")
+  :init
+  (ivy-mode 1)
+  :config
+  (setq ivy-height 20
+        ivy-use-virtual-buffers t
+        ivy-count-format "(%d/%d) "
+        ivy-dynamic-exhibit-delay-ms 200)
+  :bind
+  ("C-c M-x" . execute-extended-command)
+  ("C-s" . swiper)
+  ("M-x" . counsel-M-x)
+  ("C-x C-f" . counsel-find-file)
+  ("<f1> f" . counsel-describe-function)
+  ("<f1> v" . counsel-describe-variable)
+  ("<f1> l" . counsel-find-library)
+  ("<f2> i" . counsel-info-lookup-symbol)
+  ("<f2> u" . counsel-unicode-char)
+  ("C-c f" . counsel-recentf)
+  ("C-c g" . counsel-git)
+  ("C-c p" . counsel-git-grep)
+  ("C-c k" . counsel-rg)
+  ("C-c l" . counsel-file-jump)
+  ("C-c r" . ivy-resume)
+  ("M-y" . counsel-yank-pop))
 
+;; load and configure zenburn theme
+(use-package zenburn-theme :ensure t
+  :config
+  (load-theme 'zenburn t)
+  (custom-theme-set-faces 'zenburn
+                          `(org-level-2 ((t (:foreground "#93E0E3"))))   ; zenburn-cyan
+                          `(org-level-3 ((t (:foreground "#9C6363"))))   ; zenburn-red-3
+                          `(org-archived ((t (:foreground "#656555"))))  ; zenburn-fg-1
+                          ))
 
-;; [elpa] load ace-window, to change windows with M-o and highlighted window number
-(if (require 'ace-window nil t)
-    (global-set-key (kbd "M-o") 'ace-window))
+;; load and configure graphviz mode
+(use-package graphviz-dot-mode :ensure t
+  :defer t
+  :config
+  (setq graphviz-dot-auto-indent-on-braces nil
+        graphviz-dot-auto-indent-on-newline nil
+        graphviz-dot-auto-indent-on-semi nil))
 
-;; load aditional export options in org-mode
-(eval-after-load "org" '(progn (require 'ox-odt nil t)
-                               (require 'ox-md nil t)
-                               (require 'ox-freemind nil t)
-                               (require 'ox-texinfo nil t)))
+;; edit PlatUML diagrams
+(use-package plantuml-mode :ensure t
+  :defer t
+  :mode "\\.puml$\\'"
+  :config
+  ;; set the path of PlantUML jar file to what is used by the Debian package
+  (setq plantuml-jar-path "/usr/share/plantuml/plantuml.jar")
+  ;; set the path of PlantUML jar file for org
+  (setq org-plantuml-jar-path plantuml-jar-path))
 
-;; [elpa] load and activate git-gutter-fringe that marks changes in the left bar
-(if (and (boundp 'fringe-mode) (require 'git-gutter-fringe nil t))
-    (global-git-gutter-mode +1))
+;; ignore mouse, not enabled here
+(use-package disable-mouse :ensure t
+  :defer t)
 
-;; [elpa] move current line or region with M-up / M-down
-(if (and (>= emacs-major-version 25) (require 'move-text nil t))
-    (move-text-default-bindings))
+;; timemachine to browse different file revisions (n, p, q)
+(use-package git-timemachine :ensure t
+  :defer t)
 
-;; [elpa] configure recentf to increase the history of ivy virtual buffers
-(if (require 'recentf nil t)
-	(setq recentf-max-saved-items 200))
+;; golang mode
+(use-package go-mode :ensure t
+  :defer t)
 
-;; [elpa] load and configure ivy/swiper/counsel completion framework
-;; packages (important: first hydra): hydra, counsel ivy-hydra smex
-(if (require 'ivy nil t)
-    (progn (ivy-mode 1)
-           (setq ivy-height 20)
-           (setq ivy-use-virtual-buffers t)
-           (setq ivy-count-format "(%d/%d) ")
-           (setq ivy-dynamic-exhibit-delay-ms 200)
-           (global-set-key (kbd "C-c M-x") #'execute-extended-command)
-           (global-set-key (kbd "C-s") 'swiper)
-           (global-set-key (kbd "M-x") 'counsel-M-x)
-           (global-set-key (kbd "C-x C-f") 'counsel-find-file)
-           (global-set-key (kbd "<f1> f") 'counsel-describe-function)
-           (global-set-key (kbd "<f1> v") 'counsel-describe-variable)
-           (global-set-key (kbd "<f1> l") 'counsel-find-library)
-           (global-set-key (kbd "<f2> i") 'counsel-info-lookup-symbol)
-           (global-set-key (kbd "<f2> u") 'counsel-unicode-char)
-           (global-set-key (kbd "C-c f") 'counsel-recentf)
-           (global-set-key (kbd "C-c g") 'counsel-git)
-           (global-set-key (kbd "C-c p") 'counsel-git-grep)
-           (global-set-key (kbd "C-c k") 'counsel-rg)
-           (global-set-key (kbd "C-c l") 'counsel-file-jump)
-           (global-set-key (kbd "C-c r") 'ivy-resume)
-           (global-set-key (kbd "M-y") 'counsel-yank-pop)
-           ))
+;; yaml mode
+(use-package yaml-mode :ensure t
+  :defer t)
 
-;; [elpa] configure and load zenburn theme if present
-(if (locate-file (concat (symbol-name 'zenburn) "-theme.el")
-                 custom-theme-load-path '("" "c"))
-    (progn (load-theme 'zenburn t)
-           (custom-theme-set-faces 'zenburn
-                                   `(org-level-2 ((t (:foreground "#93E0E3"))))   ; zenburn-cyan
-                                   `(org-level-3 ((t (:foreground "#9C6363"))))   ; zenburn-red-3
-                                   `(org-archived ((t (:foreground "#656555"))))  ; zenburn-fg-1
-                                   ))
-  (message "zenburn theme not found"))
+;; multi-term to have several term buffers
+(use-package multi-term :ensure t
+  :defer t)
+
+;; edit files in hexadecimal
+(use-package nhexl-mode :ensure t
+  :defer t)
 
 
 ;;--------------------------------------------------------------------
-;;  local settings in .emacs.local file
+;;  local settings in ~/.emacs.d/local.el file
 ;;--------------------------------------------------------------------
 
 ;; default fonts
 (defvar cfg-font-ttf "monospace-10")
 (defvar cfg-font-x "-misc-fixed-medium-r-normal--*-*-*-*-*-90-iso8859-*")
 
-;; settings loaded from .emacs.local
-(if (file-exists-p "~/.emacs.local")
-    (load-file "~/.emacs.local"))
+;; settings loaded from local.el
+(let ((file (locate-user-emacs-file "local.el")))
+  (when (file-exists-p file)
+    (load-file file)))
 
-;; example of .emacs.local:
+;; example of local.el:
 ;; (setq cfg-font-ttf "inconsolata-10"
 ;;       cfg-font-x "-*-terminus-medium-r-*-*-*-*-*-*-*-60-iso8859-*")
 
-;; example of .emacs.local for Ms Windows:
+;; example of local.el for Ms Windows:
 ;; (setq cfg-font-ttf "Consolas 10")
 ;; (setenv "PATH"
 ;;         (concat "C:/Program Files/Git/usr/bin" ";" (getenv "PATH")))
@@ -484,6 +439,12 @@
 (progn (setq winner-dont-bind-my-keys t)
        (winner-mode 1))
 
+;; put auto-save-list directory inside ~/.emacs.d/cache
+(setq auto-save-list-file-prefix (locate-user-emacs-file "cache/auto-save-list/.saves-"))
+
+;; set history file location to ~/.emacs.d/cache/history
+(setq savehist-file (locate-user-emacs-file "cache/history"))
+
 ;; keep minibuffer history
 (savehist-mode 1)
 
@@ -601,7 +562,7 @@
       dabbrev-case-replace nil)
 
 ;; set cache dir for semantic so it doesn't leave all its shit everywhere
-(setq semanticdb-default-save-directory "~/.emacs.d/semantic.cache")
+(setq semanticdb-default-save-directory (locate-user-emacs-file "cache/semantic.cache"))
 
 ;; settings for eldoc
 (setq eldoc-idle-delay 0.5)
@@ -628,8 +589,7 @@
       (setq ggtags-highlight-tag nil)  ; deactivated because it is too slow in windows
       (setq counsel--git-grep-count-threshold -1)  ; don't preload every git grep result on invocation, terrible for huge repos
       ;; (global-set-key (kbd "C-c k") 'counsel-ag)  ; in windows it is faster than rg
-      (if (require 'disable-mouse nil t)  ; ignore mouse to compensate slopy focus missing in Windows desktop
-          (global-disable-mouse-mode))
+      (global-disable-mouse-mode)  ; ignore mouse to compensate slopy focus missing in Windows desktop
       (setq browse-url-browser-function 'browse-url-chrome)
       (setq my-c-style-to-use "microsoft"))
   (setq my-c-style-to-use "stroustrup"))
@@ -763,20 +723,11 @@
                   (calendar-absolute-from-gregorian (list month day year)))))
         'font-lock-face 'font-lock-function-name-face))
 
-;; set the path of PlantUML jar file to what is used by the Debian package
-(setq puml-plantuml-jar-path "/usr/share/plantuml/plantuml.jar")
-
 ;; active Org-babel languages
 (org-babel-do-load-languages
  'org-babel-load-languages
  '(;; other Babel languages
    (plantuml . t)))
-
-;; set the path of PlantUML jar file for org
-(setq org-plantuml-jar-path puml-plantuml-jar-path)
-
-;; open files with .puml extension with puml-mode
-(add-to-list 'auto-mode-alist '("\\.puml$" . puml-mode))
 
 ;; open files with .org extension with org-mode
 (add-to-list 'auto-mode-alist '("\\.org$" . org-mode))
@@ -900,15 +851,14 @@
 ;;  cool little functions
 ;;--------------------------------------------------------------------
 
-;; inhibit backups or store them in ~/.emacs.backup, if it exists
+;; inhibit backups or store them in ~/.emacs.d/backup, if it exists
 (defun make-backup-file-name (file-name)
   "Create the non-numeric backup file name for `file-name'."
-  (if (file-exists-p "~/.emacs.backup")
-      (concat (expand-file-name "~/.emacs.backup/")
-              (dired-replace-in-string "/" "|" file-name))
-;    (concat file-name "~")
-    ""
-    ))
+  (let ((dir (locate-user-emacs-file "backup/")))
+    (if (file-directory-p dir)
+        (concat (expand-file-name dir)
+                (dired-replace-in-string "/" "|" file-name))
+    "")))
 
 ;; insert a path into the buffer with completion
 (defun insert-path ()
@@ -1333,6 +1283,9 @@ instead."
 ;;  notes and reminders
 ;;--------------------------------------------------------------------
 ;;
+;; - recompile .elc files after major emacs version change:
+;;   (byte-recompile-directory package-user-dir nil 'force)
+;;
 ;; - interactive functions to find or set configs:
 ;;     describe-variable, set-variable, describe-function,
 ;;     describe-key, find-library, find-function, find-variable
@@ -1353,9 +1306,6 @@ instead."
 ;;   - M-x add-dir-local-variable
 ;;   - .dir-locals.el  ( (nil (general . settings)) (mode1 (settings . 1)) )
 ;;   - example, open .h in C++ mode: ((c-mode . ((mode . c++))))
-;;
-;; - recompile .elc files after major emacs version change, C-x C-e at end of:
-;;   (byte-recompile-directory package-user-dir nil 'force)
 ;;
 ;; - macros
 ;;   - save: M-x name-last-kbd-macro  M-x insert-kbd-macro
@@ -1596,9 +1546,6 @@ instead."
 ;;       #+BEGIN: columnview :hlines nil :id local :indent t :skip-empty-rows t
 ;;       #+END:
 ;;
-;; - vc
-;;   - M-x git-timemachine (elpa): browse different file revisions (n, p, q)
-;;
 ;; - M-x term (like shell or eshell but with full curses support)
 ;;   - C-c C-k  term-char-mode: every char but C-c is sent to the terminal (default)
 ;;   - C-c C-j  term-line-mode: only full lines are sent, any other keys are like normal emacs
@@ -1653,17 +1600,3 @@ instead."
 ;;--------------------------------------------------------------------
 ;;  automatic customizations
 ;;--------------------------------------------------------------------
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(package-selected-packages
-   (quote
-    (smex zoom-frm zenburn-theme yaml-mode ws-butler wgrep web-mode textile-mode sml-modeline rust-mode rainbow-mode rainbow-delimiters puml-mode projectile popup org nhexl-mode multi-term move-text markdown-mode magit lua-mode ledger-mode ivy-hydra graphviz-dot-mode go-mode git-timemachine git-gutter-fringe ggtags elixir-mode edit-server disable-mouse delim-kill crystal-mode counsel cmake-mode cider c-eldoc async ace-window ace-jump-mode))))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- )
