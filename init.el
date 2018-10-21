@@ -40,7 +40,7 @@
 (unless (package-installed-p 'use-package)
   (package-refresh-contents)
   (package-install 'use-package))
-(setq use-package-verbose t)
+(setq use-package-verbose nil)
 
 
 ;;--------------------------------------------------------------------
@@ -61,8 +61,9 @@
 (use-package diminish :ensure t)
 
 ;; third party emacs mode for using global tags
-(use-package ggtags :ensure t
-  :bind ("C-." . ggtags-find-reference))
+(if (>= emacs-major-version 25)
+    (use-package ggtags :ensure t
+      :bind ("C-." . ggtags-find-reference)))
 
 ;; load markdown edition mode and configure it to use pandoc
 ;; inspired by https://gist.github.com/fredRos/0e3a845de95ec654538f
@@ -227,14 +228,15 @@
         graphviz-dot-auto-indent-on-semi nil))
 
 ;; edit PlatUML diagrams
-(use-package plantuml-mode :ensure t
-  :defer t
-  :mode "\\.puml$\\'"
-  :config
-  ;; set the path of PlantUML jar file to what is used by the Debian package
-  (setq plantuml-jar-path "/usr/share/plantuml/plantuml.jar")
-  ;; set the path of PlantUML jar file for org
-  (setq org-plantuml-jar-path plantuml-jar-path))
+(if (>= emacs-major-version 25)
+    (use-package plantuml-mode :ensure t
+      :defer t
+      :mode "\\.puml$\\'"
+      :config
+      ;; set the path of PlantUML jar file to what is used by the Debian package
+      (setq plantuml-jar-path "/usr/share/plantuml/plantuml.jar")
+      ;; set the path of PlantUML jar file for org
+      (setq org-plantuml-jar-path plantuml-jar-path)))
 
 ;; ignore mouse, not enabled here
 (use-package disable-mouse :ensure t
