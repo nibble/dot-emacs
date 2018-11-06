@@ -240,7 +240,9 @@
 
 ;; ignore mouse, not enabled here
 (use-package disable-mouse :ensure t
-  :defer t)
+  :defer t
+  :config
+  (setq disable-mouse-mode-global-lighter ""))
 
 ;; timemachine to browse different file revisions (n, p, q)
 (use-package git-timemachine :ensure t
