@@ -155,12 +155,19 @@
   (require 'ox-freemind nil t)
   (require 'ox-texinfo nil t))
 
-;; load git-gutter-fringe that marks changes in the left bar
-(use-package git-gutter-fringe :ensure t
-  :if (boundp 'fringe-mode)
+;; git-gutter marks modified chunks in the file and performs some git commands
+(use-package git-gutter :ensure t
   :diminish (git-gutter-mode . "")
   :config
-  (global-git-gutter-mode +1))
+  (global-git-gutter-mode t)
+  :bind
+  ("C-x v p" . git-gutter:previous-hunk)
+  ("C-x v n" . git-gutter:next-hunk)
+  ("C-x v s" . git-gutter:stage-hunk))
+
+;; git-gutter-fringe moves git-gutter indications to the fringe in graphic mode
+(use-package git-gutter-fringe :ensure t
+  :if (boundp 'fringe-mode))
 
 ;; move current line or region with M-up / M-down
 (use-package move-text :ensure t
