@@ -32,7 +32,7 @@
            (add-to-list 'package-archives
                         '("melpa" . "http://melpa.org/packages/") t)
            (add-to-list 'package-archives
-			'("org" . "http://orgmode.org/elpa/") t)
+                        '("org" . "http://orgmode.org/elpa/") t)
            (package-initialize)
            (setq package-enable-at-startup nil)))
 
@@ -64,6 +64,22 @@
 (if (>= emacs-major-version 25)
     (use-package ggtags :ensure t
       :bind ("C-." . ggtags-find-reference)))
+
+;; eldoc prints in the minibuffer the  definition of the function at point
+(use-package eldoc
+  :diminish eldoc-mode
+  :config
+  (setq eldoc-idle-delay 0.5)
+  (add-hook 'emacs-lisp-mode-hook 'turn-on-eldoc-mode)
+  (add-hook 'lisp-interaction-mode-hook 'turn-on-eldoc-mode)
+  (add-hook 'c-mode-hook 'turn-on-eldoc-mode)
+  (add-hook 'c++-mode-hook 'turn-on-eldoc-mode)
+  (add-hook 'python-mode-hook 'turn-on-eldoc-mode)
+  (add-hook 'cperl-mode-hook (lambda ()
+                               (set (make-local-variable 'eldoc-documentation-function)
+                                    (lambda () (let ((cperl-message-on-help-error nil))
+                                                 (cperl-get-help))))
+                               (turn-on-eldoc-mode))))
 
 ;; load markdown edition mode and configure it to use pandoc
 ;; inspired by https://gist.github.com/fredRos/0e3a845de95ec654538f
@@ -575,14 +591,6 @@
 ;; set cache dir for semantic so it doesn't leave all its shit everywhere
 (setq semanticdb-default-save-directory (locate-user-emacs-file "cache/semantic.cache"))
 
-;; settings for eldoc
-(setq eldoc-idle-delay 0.5)
-(autoload 'turn-on-eldoc-mode "eldoc" nil t)
-
-;; eldoc in emacs-lisp modes
-(add-hook 'emacs-lisp-mode-hook 'turn-on-eldoc-mode)
-(add-hook 'lisp-interaction-mode-hook 'turn-on-eldoc-mode)
-
 ;; constant width of unix manual pages viewer
 (setq Man-width 79)
 
@@ -664,17 +672,6 @@
       cperl-continued-statement-offset 4
       cperl-indent-parens-as-block t
       cperl-tab-always-indent t)
-
-;; eldoc in cperl-mode
-(add-hook 'cperl-mode-hook
-          (lambda ()
-            (set (make-local-variable 'eldoc-documentation-function)
-                 (lambda () (let ((cperl-message-on-help-error nil))
-                              (cperl-get-help))))
-            (turn-on-eldoc-mode)))
-
-;; eldoc in python-mode
-;(add-hook 'python-mode-hook 'turn-on-eldoc-mode)
 
 ;; configure fill-paragraph for Python docstrings
 (setq python-fill-docstring-style 'django)
