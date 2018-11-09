@@ -60,6 +60,12 @@
 ;; used by use-package to remove mode line displays of minor modes
 (use-package diminish :ensure t)
 
+;; configure emacs server
+(use-package server
+  :defer t
+  :config
+  (setq server-auth-dir (locate-user-emacs-file "cache/server")))
+
 ;; third party emacs mode for using global tags
 (if (>= emacs-major-version 25)
     (use-package ggtags :ensure t
