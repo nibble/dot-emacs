@@ -465,26 +465,12 @@
 (progn (setq auto-revert-interval 5)
        (global-auto-revert-mode t))
 
-;; don't stop redrawing on keystroke
-;; deactivated: in long complex buffers scrolling takes ages
-;;(setq redisplay-dont-pause t)
-
 ;; prevents M-z to minimize frame
 (defun iconify-or-deiconify-frame (&optional frame)
   (message "Iconify key disabled, use M-x iconify-frame"))
 
-;; a better way to change buffers with C-x b
-;; obsolete in emacs 24.4
-;; (iswitchb-mode t)
-
-;; ;; prevent switching to another frame
-;; (setq iswitchb-default-method 'samewindow)
-
-;; activate ido-mode, only for buffer switching (C-x b C-x f for files)
-;; (when (fboundp 'ido-mode)
-;;   (ido-mode 'buffers)
-;;   (setq ido-default-buffer-method 'selected-window)
-;;   (setq ido-save-directory-list-file nil))
+;; C-x C-b runs ibuffer instead of list-buffers
+(defalias 'list-buffers 'ibuffer)
 
 ;; activate windmove, change windows with shift-(cursors)
 (windmove-default-keybindings)
@@ -567,9 +553,6 @@
 
 ;; after mouse selection in X11, you can paste by `yank' in emacs
 (setq x-select-enable-primary t)
-
-;; mouse pointer avoids the cursor
-;;(mouse-avoidance-mode 'animate)
 
 ;; set fill column to a most sane value
 (setq-default fill-column 79)
@@ -674,10 +657,6 @@
 ;; default compile command
 (setq compile-command "make")
 
-;; makefile mode settings
-;; (add-hook 'makefile-mode-hook
-;;        (lambda () (setq show-trailing-whitespace t)))
-
 ;; use ruby-mode for some Ruby internal DSL files
 (setq auto-mode-alist (cons '("\\WRakefile$" . ruby-mode) auto-mode-alist)
       auto-mode-alist (cons '("\\WGemfile"   . ruby-mode) auto-mode-alist)
@@ -725,29 +704,15 @@
       ada-which-compiler 'generic
       ada-fill-comment-prefix "-- ")
 
-;; ;; file extensions for html-mode
-;; (setq auto-mode-alist (cons '("\\.xhtml$" . html-mode) auto-mode-alist))
-
-;; ;; enable automatic timestamps with Time-stamp: <>
-;; (setq time-stamp-active t
-;;       time-stamp-line-limit 10
-;;       time-stamp-format "%04y-%02m-%02d %02H:%02M:%02S")
-;; (add-hook 'write-file-hooks 'time-stamp)
-
 ;; also hide comments with hs-hide-all
 (setq hs-hide-comments nil)
 
 ;; isearch enters hidden text blocks
 (setq hs-isearch-open 'x)
 
-;; spanish calendar
+;; configure calendar
 (setq calendar-week-start-day 1
-      european-calendar-style 't
-      calendar-day-name-array ["domingo" "lunes" "martes" "miércoles"
-                               "jueves" "viernes" "sábado"]
-      calendar-month-name-array ["enero" "febrero" "marzo" "abril" "mayo"
-                                 "junio" "julio" "agosto" "septiembre"
-                                 "octubre" "noviembre" "diciembre"])
+      european-calendar-style 't)
 
 ;; display week numbers in calendar
 (setq calendar-week-start-day 1
@@ -1058,20 +1023,6 @@
   (interactive)
   (shell (concat "shell-" default-directory "-shell" )))
 
-;; duplicate line or region, optionally arg times (brx)
-(defun duplicate-line-or-region (arg)
-  "Duplicates the current region (transient) ARG times, but at
-least twice. If none is active, duplicate the current line
-instead."
-  (interactive "p")
-  (let ((times (if (> arg 1) arg 2)))
-    (save-excursion
-      (if (use-region-p)
-          (kill-region (mark) (point))
-        (kill-region (point-at-bol) (point-at-bol 2)))
-      (dotimes (i times)
-        (yank)))))
-
 ;; force vc-dir to start in the root path (fix vc for git)
 ;; http://www.emacswiki.org/emacs-en/VcTopDirectory
 (defadvice vc-dir-prepare-status-buffer
@@ -1241,12 +1192,6 @@ instead."
 ;;  simple key shortcuts (shouldn't overwrite any standard key chord)
 ;;--------------------------------------------------------------------
 
-;; use ibuffer instead of list-buffers
-(global-set-key (kbd "C-x C-b") 'ibuffer)
-
-;; use bs-show instead of list-buffers
-;;(global-set-key (kbd "C-x C-b") 'bs-show)
-
 ;; M-g for goto-line
 (global-set-key (kbd "M-g") 'goto-line)
 
@@ -1290,9 +1235,6 @@ instead."
 ;; same as C-u M-x join-line: join next line to this and fix up whitespace
 (global-set-key (kbd "C-c j") (lambda () (interactive) (join-line 4)))
 
-;; 'C-c C-y' to duplicate-line-or-region
-(global-set-key (kbd "C-c C-y") 'duplicate-line-or-region)
-
 ;; M-; comment-or-uncomment-region (overwites comment-dwim keybinding)
 (global-set-key (kbd "M-;") 'comment-or-uncomment-region)
 
@@ -1304,12 +1246,6 @@ instead."
 
 ;; 'C-c I' to insert-timestamp
 (global-set-key (kbd "C-c I") 'insert-timestamp)
-
-;; 'M-up/down' to scroll buffer one line (since 24.1)
-(if (boundp 'scroll-up-line)
-    (global-set-key (kbd "M-<down>") 'scroll-up-line))
-(if (boundp 'scroll-up-line)
-    (global-set-key (kbd "M-<up>")   'scroll-down-line))
 
 ;; C-c e for eval and replace last sexp
 (global-set-key (kbd "C-c e") 'eval-and-replace)
@@ -1585,24 +1521,6 @@ instead."
 ;; - M-x term (like shell or eshell but with full curses support)
 ;;   - C-c C-k  term-char-mode: every char but C-c is sent to the terminal (default)
 ;;   - C-c C-j  term-line-mode: only full lines are sent, any other keys are like normal emacs
-;;
-;; - w3m
-;;   - general use
-;;     - open url:     g
-;;     - quit:         Q
-;;   - moving in a page
-;;     - left:         ,
-;;     - right:        .
-;;   - moving fom page to page
-;;     - back:         B
-;;   - tabs
-;;     - follow link:  S-RET
-;;     - open new:     G
-;;     - close:        C-c C-w
-;;     - duplicate:    C-c C-t
-;;     - last:         C-c C-p
-;;     - next:         C-c C-n
-;;     - list:         C-c C-s
 ;;
 ;; - draw diagrams with picture-mode
 ;;   - C-c C-c  exits picture-mode clearing whitespace
