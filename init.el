@@ -486,6 +486,9 @@
 ;; set history file location to ~/.emacs.d/cache/history
 (setq savehist-file (locate-user-emacs-file "cache/history"))
 
+;; put url cache directory inside ~/.emacs.d/cache
+(setq url-configuration-directory (locate-user-emacs-file "cache/url"))
+
 ;; keep minibuffer history
 (savehist-mode 1)
 
