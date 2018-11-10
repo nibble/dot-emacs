@@ -66,6 +66,22 @@
   :config
   (setq server-auth-dir (locate-user-emacs-file "cache/server")))
 
+;; easy-kill replaces M-w with different actions, ? for help
+(use-package easy-kill :ensure t
+  :config
+  (setq transient-mark-mode t)  ; unfortunately it doesn't work if disabled :(
+  (global-set-key [remap kill-ring-save] #'easy-kill)
+  (global-set-key [remap mark-sexp] #'easy-mark))
+
+;; don't activate the region with C-x C-x, needed with transient-mark-mode
+;; https://www.masteringemacs.org/article/fixing-mark-commands-transient-mark-mode
+(defun exchange-point-and-mark-no-activate ()
+  "Identical to \\[exchange-point-and-mark] but will not activate the region."
+  (interactive)
+  (exchange-point-and-mark)
+  (deactivate-mark nil))
+(define-key global-map [remap exchange-point-and-mark] 'exchange-point-and-mark-no-activate)
+
 ;; third party emacs mode for using global tags
 (if (>= emacs-major-version 25)
     (use-package ggtags :ensure t
