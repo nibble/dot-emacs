@@ -15,6 +15,7 @@
 (prefer-coding-system 'utf-8-unix)
 (fset 'yes-or-no-p 'y-or-n-p)
 (column-number-mode t)
+(show-paren-mode 1)
 (menu-bar-mode -1)
 (if (boundp 'tool-bar-mode)
     (ignore-errors (tool-bar-mode -1)))
@@ -23,3 +24,9 @@
 
 (global-set-key (kbd "M-;") 'comment-or-uncomment-region)
 (global-set-key (kbd "M-_") 'dabbrev-expand)
+
+;; workaround to wrong colors when running inside tmux, not needed in
+;; emacs >= 26 or when a color theme is used
+(when (and (< emacs-major-version 26) (not (display-graphic-p)))
+  (setq frame-background-mode 'light)
+  (frame-set-background-mode nil))
