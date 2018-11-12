@@ -14,7 +14,7 @@
           initial-scratch-message nil))
 
 ;; add to the load-path local directory for dropped-in elisp files
-(add-to-list 'load-path (expand-file-name "elisp/" user-emacs-directory))
+(add-to-list 'load-path (expand-file-name "lisp/" user-emacs-directory))
 
 ;; ensure ~/.emacs.d/cache directory exists
 (let ((dir (expand-file-name "cache/" user-emacs-directory)))
@@ -307,6 +307,16 @@
 ;; edit files in hexadecimal
 (use-package nhexl-mode :ensure t
   :defer t)
+
+;; zoom-frm (local lisp files) to zoom frame instead of buffer
+(use-package frame-fns)
+(use-package frame-cmds)
+(use-package zoom-frm
+  :config
+  (define-key ctl-x-map [(control ?+)] 'zoom-in/out)
+  (define-key ctl-x-map [(control ?-)] 'zoom-in/out)
+  (define-key ctl-x-map [(control ?=)] 'zoom-in/out)
+  (define-key ctl-x-map [(control ?0)] 'zoom-in/out))
 
 ;; git-gutter marks modified chunks in the file and performs some git commands.
 ;; It should be installed at the end because it will analyse any open file and
