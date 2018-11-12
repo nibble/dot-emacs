@@ -7,6 +7,7 @@
 ;;   exec emacs -Q -nw -l ~/.emacs.d/init-minimal.el $*
 
 (setq make-backup-files nil
+      auto-save-default nil
       shift-select-mode nil
       transient-mark-mode nil
       visible-bell t

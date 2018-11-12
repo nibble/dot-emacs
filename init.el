@@ -14,10 +14,10 @@
           initial-scratch-message nil))
 
 ;; add to the load-path local directory for dropped-in elisp files
-(add-to-list 'load-path (locate-user-emacs-file "elisp/"))
+(add-to-list 'load-path (expand-file-name "elisp/" user-emacs-directory))
 
 ;; ensure ~/.emacs.d/cache directory exists
-(let ((dir (locate-user-emacs-file "cache/")))
+(let ((dir (expand-file-name "cache/" user-emacs-directory)))
   (when (not (file-directory-p dir))
     (make-directory dir nil)))
 
@@ -36,9 +36,16 @@
            (package-initialize)
            (setq package-enable-at-startup nil)))
 
+;; force a package refresh when the first package of a session is installed
+;; https://github.com/jwiegley/use-package/issues/256
+(defun my-package-install-refresh-contents (&rest args)
+  (package-refresh-contents)
+  (advice-remove 'package-install 'my-package-install-refresh-contents))
+(advice-add 'package-install :before 'my-package-install-refresh-contents)
+
 ;; ensure use-package is installed and configure it
 (unless (package-installed-p 'use-package)
-  (package-refresh-contents)
+  ;; (package-refresh-contents)
   (package-install 'use-package))
 (setq use-package-verbose nil)
 
@@ -64,7 +71,7 @@
 (use-package server
   :defer t
   :config
-  (setq server-auth-dir (locate-user-emacs-file "cache/server")))
+  (setq server-auth-dir (expand-file-name "cache/server" user-emacs-directory)))
 
 ;; easy-kill replaces M-w with different actions, ? for help
 (use-package easy-kill :ensure t
@@ -109,7 +116,7 @@
   :defer t
   :config
   (setq markdown-command (concat "pandoc -f markdown -t html5 -c "
-                                 (locate-user-emacs-file "res/github-pandoc.css")
+                                 (expand-file-name "res/github-pandoc.css" user-emacs-directory)
                                  " --self-contained --standalone")))
 
 ;; same name buffers are identified by its directory instead of <n>
@@ -123,7 +130,7 @@
 ;; remember point position on closing files
 (use-package saveplace
   :config
-  (setq save-place-file (locate-user-emacs-file "cache/places")
+  (setq save-place-file (expand-file-name "cache/places" user-emacs-directory)
         save-place-forget-unreadable-files nil)
   (if (>= emacs-major-version 25)
       (save-place-mode 1)
@@ -193,20 +200,6 @@
   (require 'ox-freemind nil t)
   (require 'ox-texinfo nil t))
 
-;; git-gutter marks modified chunks in the file and performs some git commands
-(use-package git-gutter :ensure t
-  :diminish (git-gutter-mode . "")
-  :config
-  (global-git-gutter-mode t)
-  :bind
-  ("C-x v p" . git-gutter:previous-hunk)
-  ("C-x v n" . git-gutter:next-hunk)
-  ("C-x v s" . git-gutter:stage-hunk))
-
-;; git-gutter-fringe moves git-gutter indications to the fringe in graphic mode
-(use-package git-gutter-fringe :ensure t
-  :if (boundp 'fringe-mode))
-
 ;; move current line or region with M-up / M-down
 (use-package move-text :ensure t
   :if (>= emacs-major-version 25)
@@ -216,8 +209,8 @@
 ;; configure recentf to increase the history of ivy virtual buffers
 (use-package recentf
   :config
-  (setq recentf-save-file (locate-user-emacs-file "cache/recentf"))
-  (setq recentf-max-saved-items 200))
+  (setq recentf-save-file (expand-file-name "cache/recentf" user-emacs-directory)
+        recentf-max-saved-items 200))
 
 ;; load and configure ivy/swiper/counsel completion framework
 (use-package wgrep :ensure t)
@@ -226,7 +219,7 @@
 (use-package ivy-hydra :ensure t)
 (use-package smex :ensure t
   :config
-  (setq smex-save-file (locate-user-emacs-file "cache/smex-items")))
+  (setq smex-save-file (expand-file-name "cache/smex-items" user-emacs-directory)))
 (use-package ivy :ensure t
   :diminish (ivy-mode . "")
   :init
@@ -254,7 +247,7 @@
   ("C-c r" . ivy-resume)
   ("M-y" . counsel-yank-pop))
 
-; load and configure magit
+;; load and configure magit
 (use-package magit :ensure t
   :defer t
   :bind
@@ -315,6 +308,24 @@
 (use-package nhexl-mode :ensure t
   :defer t)
 
+;; git-gutter marks modified chunks in the file and performs some git commands.
+;; It should be installed at the end because it will analyse any open file and
+;; crash in Windows when installing from scratch, as it has to popen git for
+;; every installed library file (org-mode specially)
+(use-package git-gutter :ensure t
+  :diminish (git-gutter-mode . "")
+  :config
+  (global-git-gutter-mode t)
+  :bind
+  ("C-x v p" . git-gutter:previous-hunk)
+  ("C-x v n" . git-gutter:next-hunk)
+  ("C-x v s" . git-gutter:stage-hunk))
+
+;; git-gutter-fringe places git-gutter indications at the fringe in graphics
+;; mode
+(use-package git-gutter-fringe :ensure t
+  :if (boundp 'fringe-mode))
+
 
 ;;--------------------------------------------------------------------
 ;;  local settings in ~/.emacs.d/local.el file
@@ -325,9 +336,7 @@
 (defvar cfg-font-x "-misc-fixed-medium-r-normal--*-*-*-*-*-90-iso8859-*")
 
 ;; settings loaded from local.el
-(let ((file (locate-user-emacs-file "local.el")))
-  (when (file-exists-p file)
-    (load-file file)))
+(load (expand-file-name "local.el" user-emacs-directory) t)
 
 ;; example of local.el:
 ;; (setq cfg-font-ttf "inconsolata-10"
@@ -397,8 +406,8 @@
 (defun px-raise-frame-and-give-focus ()
   (when window-system
     (raise-frame)
-;    (x-focus-frame (selected-frame))
-;    (set-mouse-pixel-position (selected-frame) 4 4)
+    ;; (x-focus-frame (selected-frame))
+    ;; (set-mouse-pixel-position (selected-frame) 4 4)
     ))
 (add-hook 'server-switch-hook 'px-raise-frame-and-give-focus)
 
@@ -434,7 +443,7 @@
 (setq comint-input-ignoredups t)
 
 ;; configure shell modes scroll
-;(setq comint-scroll-show-maxiumum-output)
+;;(setq comint-scroll-show-maxiumum-output)
 (setq comint-scroll-to-bottom-on-input t)
 
 ;; show the column number at the point in the mode line
@@ -481,13 +490,15 @@
        (winner-mode 1))
 
 ;; put auto-save-list directory inside ~/.emacs.d/cache
-(setq auto-save-list-file-prefix (locate-user-emacs-file "cache/auto-save-list/.saves-"))
+(setq auto-save-list-file-prefix
+      (expand-file-name "cache/auto-save-list/.saves-" user-emacs-directory))
 
 ;; set history file location to ~/.emacs.d/cache/history
-(setq savehist-file (locate-user-emacs-file "cache/history"))
+(setq savehist-file (expand-file-name "cache/history" user-emacs-directory))
 
 ;; put url cache directory inside ~/.emacs.d/cache
-(setq url-configuration-directory (locate-user-emacs-file "cache/url"))
+(setq url-configuration-directory
+      (expand-file-name "cache/url" user-emacs-directory))
 
 ;; keep minibuffer history
 (savehist-mode 1)
@@ -499,16 +510,16 @@
 (setq kill-ring-max 200)
 
 ;; inhibit autosave
-;(setq auto-save-default nil)
+;; (setq auto-save-default nil)
 
 ;; set directory for temporary files
 ;; disabled, it breaks EasyPG
-;(setq temporary-file-directory "~/.emacs.d/tmp/")
+;; (setq temporary-file-directory "~/.emacs.d/tmp/")
 
 ;; don't use external gpg agent to prompt for passwords
 (setenv "GPG_AGENT_INFO" nil)
 
-; probar
+;; try:
 ;; (defadvice epg--start (around advice-epg-disable-agent disable)
 ;;   "Make epg--start not able to find a gpg-agent"
 ;;   (let ((agent (getenv "GPG_AGENT_INFO")))
@@ -573,7 +584,6 @@
       compilation-window-height 16)
 
 ;; set default settings for grep function
-;(setq grep-command "grep -nHIr --exclude-from=$HOME/.grep.exclude -e ")
 (setq grep-command "grep -nHIr -e ")
 
 ;; enable downcase-region and upcase-region
@@ -603,7 +613,8 @@
       dabbrev-case-replace nil)
 
 ;; set cache dir for semantic so it doesn't leave all its shit everywhere
-(setq semanticdb-default-save-directory (locate-user-emacs-file "cache/semantic.cache"))
+(setq semanticdb-default-save-directory
+      (expand-file-name "cache/semantic.cache" user-emacs-directory))
 
 ;; constant width of unix manual pages viewer
 (setq Man-width 79)
@@ -700,7 +711,7 @@
       ada-clean-buffer-before-saving nil
       ada-indent 4
       ada-indent-after-return nil
-;      ada-indent-comment-as-code nil
+      ;; ada-indent-comment-as-code nil
       ada-indent-comment-as-code t
       ada-indent-record-rel-type 4
       ada-language-version 'ada83
@@ -713,19 +724,14 @@
 ;; isearch enters hidden text blocks
 (setq hs-isearch-open 'x)
 
-;; configure calendar
+;; configure calendar to european style and showing week numbers
 (setq calendar-week-start-day 1
-      european-calendar-style 't)
-
-;; display week numbers in calendar
-(setq calendar-week-start-day 1
-      calendar-intermonth-text
-      '(propertize
-        (format "%2d"
-                (car
-                 (calendar-iso-from-absolute
-                  (calendar-absolute-from-gregorian (list month day year)))))
-        'font-lock-face 'font-lock-function-name-face))
+      european-calendar-style 't
+      calendar-intermonth-text '(propertize
+                                 (format "%2d"
+                                         (car (calendar-iso-from-absolute
+                                               (calendar-absolute-from-gregorian (list month day year)))))
+                                 'font-lock-face 'font-lock-function-name-face))
 
 ;; active Org-babel languages
 (org-babel-do-load-languages
@@ -855,14 +861,14 @@
 ;;  cool little functions
 ;;--------------------------------------------------------------------
 
-;; inhibit backups or store them in ~/.emacs.d/backup, if it exists
+;; inhibit backups, or store them in ~/.emacs.d/cache/backup if exists
 (defun make-backup-file-name (file-name)
   "Create the non-numeric backup file name for `file-name'."
-  (let ((dir (locate-user-emacs-file "backup/")))
+  (let ((dir (expand-file-name "cache/backup/" user-emacs-directory)))
     (if (file-directory-p dir)
         (concat (expand-file-name dir)
                 (dired-replace-in-string "/" "|" file-name))
-    "")))
+      "")))
 
 ;; insert a path into the buffer with completion
 (defun insert-path ()
@@ -1029,7 +1035,7 @@
 ;; force vc-dir to start in the root path (fix vc for git)
 ;; http://www.emacswiki.org/emacs-en/VcTopDirectory
 (defadvice vc-dir-prepare-status-buffer
-  (before my-vcs-goto-top-directory activate compile)
+    (before my-vcs-goto-top-directory activate compile)
   (let* ((backend (ad-get-arg 2))
          (vcs-dir (ad-get-arg 1))
          (vcs-top-dir (vc-call-backend backend 'responsible-p vcs-dir)))
