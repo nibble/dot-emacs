@@ -289,8 +289,8 @@
   (setq disable-mouse-mode-global-lighter ""))
 
 ;; git-timemachine to browse different file revisions (n|ext, p|revious,
-;; q|uit). Launch with M-x git-timemachine or with M-x my-git-timemachine for
-;; ivy-like interface
+;; q|uit). Launch with M-x git-timemachine or with C-x v t (M-x
+;; my-git-timemachine) for ivy-like interface
 (use-package git-timemachine :ensure t
   :defer t
   :config
@@ -317,7 +317,8 @@
     (unless (featurep 'git-timemachine)
       (require 'git-timemachine))
     (git-timemachine--start #'my-git-timemachine-show-selected-revision))
-  )
+  :bind
+  ("C-x v t" . my-git-timemachine))
 
 ;; golang mode
 (use-package go-mode :ensure t
