@@ -11,15 +11,16 @@
       shift-select-mode nil
       transient-mark-mode nil
       visible-bell t
-      initial-scratch-message nil)
+      initial-scratch-message nil
+      global-eldoc-mode nil)
 
 (prefer-coding-system 'utf-8-unix)
 (fset 'yes-or-no-p 'y-or-n-p)
 (column-number-mode t)
 (show-paren-mode 1)
 (menu-bar-mode -1)
-(if (boundp 'tool-bar-mode)
-    (ignore-errors (tool-bar-mode -1)))
+(when (boundp 'tool-bar-mode)
+  (ignore-errors (tool-bar-mode -1)))
 
 (windmove-default-keybindings)
 

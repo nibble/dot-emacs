@@ -7,11 +7,11 @@
 ;;--------------------------------------------------------------------
 
 ;; undo some of the winluser-friendly changes introduced in emacs23
-(if (>= emacs-major-version 23)
-    (setq transient-mark-mode nil
-          shift-select-mode nil
-          org-replace-disputed-keys t
-          initial-scratch-message nil))
+(when (>= emacs-major-version 23)
+  (setq transient-mark-mode nil
+        shift-select-mode nil
+        org-replace-disputed-keys t
+        initial-scratch-message nil))
 
 ;; add to the load-path local directory for dropped-in elisp files
 (add-to-list 'load-path (expand-file-name "lisp/" user-emacs-directory))
@@ -22,19 +22,16 @@
     (make-directory dir nil)))
 
 ;; elpa
-(if (>= emacs-major-version 24)
-    (progn (require 'package)
-           ;; prevent writing package-selected-packages custom variable
-           (defun package--save-selected-packages (&optional value) nil)
-           ;; add repositories
-           (add-to-list 'package-archives
-                        '("melpa-stable" . "http://stable.melpa.org/packages/") t)
-           (add-to-list 'package-archives
-                        '("melpa" . "http://melpa.org/packages/") t)
-           (add-to-list 'package-archives
-                        '("org" . "http://orgmode.org/elpa/") t)
-           (package-initialize)
-           (setq package-enable-at-startup nil)))
+(when (>= emacs-major-version 24)
+  (require 'package)
+  ;; prevent writing package-selected-packages custom variable
+  (defun package--save-selected-packages (&optional value) nil)
+  ;; add repositories
+  (add-to-list 'package-archives '("melpa-stable" . "http://stable.melpa.org/packages/") t)
+  (add-to-list 'package-archives '("melpa" . "http://melpa.org/packages/") t)
+  (add-to-list 'package-archives '("org" . "http://orgmode.org/elpa/") t)
+  (package-initialize)
+  (setq package-enable-at-startup nil))
 
 ;; force a package refresh when the first package of a session is installed
 ;; https://github.com/jwiegley/use-package/issues/256
@@ -90,25 +87,28 @@
 (define-key global-map [remap exchange-point-and-mark] 'exchange-point-and-mark-no-activate)
 
 ;; third party emacs mode for using global tags
-(if (>= emacs-major-version 25)
-    (use-package ggtags :ensure t
-      :bind ("C-." . ggtags-find-reference)))
+(when (>= emacs-major-version 25)
+  (use-package ggtags :ensure t
+    :bind ("C-." . ggtags-find-reference)))
 
-;; eldoc prints in the minibuffer the  definition of the function at point
-(use-package eldoc
-  :diminish eldoc-mode
-  :config
-  (setq eldoc-idle-delay 0.5)
-  (add-hook 'emacs-lisp-mode-hook 'turn-on-eldoc-mode)
-  (add-hook 'lisp-interaction-mode-hook 'turn-on-eldoc-mode)
-  (add-hook 'c-mode-hook 'turn-on-eldoc-mode)
-  (add-hook 'c++-mode-hook 'turn-on-eldoc-mode)
-  (add-hook 'python-mode-hook 'turn-on-eldoc-mode)
-  (add-hook 'cperl-mode-hook (lambda ()
-                               (set (make-local-variable 'eldoc-documentation-function)
-                                    (lambda () (let ((cperl-message-on-help-error nil))
-                                                 (cperl-get-help))))
-                               (turn-on-eldoc-mode))))
+;; eldoc prints in the minibuffer the definition of the function at point.
+;; Activation needed only for older emacs versions, as it is now globally
+;; enabled by default
+(when (< emacs-major-version 25)
+  (use-package eldoc
+    :diminish eldoc-mode
+    :config
+    (setq eldoc-idle-delay 0.5)
+    (add-hook 'emacs-lisp-mode-hook 'turn-on-eldoc-mode)
+    (add-hook 'lisp-interaction-mode-hook 'turn-on-eldoc-mode)
+    (add-hook 'c-mode-hook 'turn-on-eldoc-mode)
+    (add-hook 'c++-mode-hook 'turn-on-eldoc-mode)
+    (add-hook 'python-mode-hook 'turn-on-eldoc-mode)
+    (add-hook 'cperl-mode-hook (lambda ()
+                                 (set (make-local-variable 'eldoc-documentation-function)
+                                      (lambda () (let ((cperl-message-on-help-error nil))
+                                                   (cperl-get-help))))
+                                 (turn-on-eldoc-mode)))))
 
 ;; load markdown edition mode and configure it to use pandoc
 ;; inspired by https://gist.github.com/fredRos/0e3a845de95ec654538f
@@ -140,8 +140,8 @@
 (use-package sml-modeline :ensure t
   :config
   (sml-modeline-mode 1)
-  (if (boundp 'scroll-bar-mode)
-      (scroll-bar-mode -1)))
+  (when (boundp 'scroll-bar-mode)
+    (scroll-bar-mode -1)))
 
 ;; M-x rainbow-mode to print color strings with colored background and
 (use-package rainbow-mode :ensure t
@@ -272,15 +272,15 @@
         graphviz-dot-auto-indent-on-semi nil))
 
 ;; edit PlatUML diagrams
-(if (>= emacs-major-version 25)
-    (use-package plantuml-mode :ensure t
-      :defer t
-      :mode "\\.puml$\\'"
-      :config
-      ;; set the path of PlantUML jar file to what is used by the Debian package
-      (setq plantuml-jar-path "/usr/share/plantuml/plantuml.jar")
-      ;; set the path of PlantUML jar file for org
-      (setq org-plantuml-jar-path plantuml-jar-path)))
+(when (>= emacs-major-version 25)
+  (use-package plantuml-mode :ensure t
+    :defer t
+    :mode "\\.puml$\\'"
+    :config
+    ;; set the path of PlantUML jar file to what is used by the Debian package
+    (setq plantuml-jar-path "/usr/share/plantuml/plantuml.jar")
+    ;; set the path of PlantUML jar file for org
+    (setq org-plantuml-jar-path plantuml-jar-path)))
 
 ;; ignore mouse, not enabled here
 (use-package disable-mouse :ensure t
@@ -456,8 +456,8 @@
 (menu-bar-mode -1)
 
 ;; hide the tool bar, protected because emacs could be compiled without X
-(if (boundp 'tool-bar-mode)
-    (ignore-errors (tool-bar-mode -1)))
+(when (boundp 'tool-bar-mode)
+  (ignore-errors (tool-bar-mode -1)))
 
 ;; cursor doesn't blink
 (blink-cursor-mode -1)
