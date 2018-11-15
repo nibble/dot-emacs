@@ -136,12 +136,13 @@
       (save-place-mode 1)
     (setq-default save-place t)))
 
-;; use modeline indication instead of scrollbars
-(use-package sml-modeline :ensure t
+;; use nyan cat modeline indication instead of scrollbars
+(use-package nyan-mode :ensure t
   :config
-  (sml-modeline-mode 1)
   (when (boundp 'scroll-bar-mode)
-    (scroll-bar-mode -1)))
+    (scroll-bar-mode -1))
+  (setq nyan-bar-length 20)
+  (nyan-mode t))
 
 ;; M-x rainbow-mode to print color strings with colored background and
 (use-package rainbow-mode :ensure t
