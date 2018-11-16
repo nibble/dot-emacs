@@ -347,6 +347,31 @@
   (define-key ctl-x-map [(control ?=)] 'zoom-in/out)
   (define-key ctl-x-map [(control ?0)] 'zoom-in/out))
 
+;; configure emacs calendar
+(use-package calendar
+  :defer t
+  :config
+  ;; set european style, and show week numbers
+  (setq calendar-week-start-day 1
+        european-calendar-style 't
+        calendar-intermonth-text '(propertize
+                                   (format "%2d"
+                                           (car (calendar-iso-from-absolute
+                                                 (calendar-absolute-from-gregorian (list month day year)))))
+                                   'font-lock-face 'font-lock-function-name-face))
+  ;; Use 'y' to copy the date under the cursor, close the calendar, and yank it
+  ;; into the buffer. Inspired by Ian Yang's iy/calendar-copy-date
+  (defun calendar-copy-date ()
+    (interactive)
+    (let ((date (calendar-cursor-to-date t))
+          (format "%Y-%m-%d"))
+      (setq date (encode-time 0 0 0 (cadr date) (car date) (nth 2 date)))
+      (setq string (format-time-string format date))
+      (kill-new string)
+      (calendar-exit)
+      (yank)))
+  (define-key calendar-mode-map (kbd "y") 'calendar-copy-date))
+
 ;; git-gutter marks modified chunks in the file and performs some git commands.
 ;; It should be installed at the end because it will analyse any open file and
 ;; crash in Windows when installing from scratch, as it has to popen git for
@@ -762,15 +787,6 @@
 
 ;; isearch enters hidden text blocks
 (setq hs-isearch-open 'x)
-
-;; configure calendar to european style and showing week numbers
-(setq calendar-week-start-day 1
-      european-calendar-style 't
-      calendar-intermonth-text '(propertize
-                                 (format "%2d"
-                                         (car (calendar-iso-from-absolute
-                                               (calendar-absolute-from-gregorian (list month day year)))))
-                                 'font-lock-face 'font-lock-function-name-face))
 
 ;; active Org-babel languages
 (org-babel-do-load-languages
