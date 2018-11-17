@@ -4,7 +4,7 @@
 ;; Example of launch script:
 ;;
 ;;   #!/bin/sh
-;;   exec emacs -Q -nw -l ~/.emacs.d/init-minimal.el $*
+;;   exec emacs -Q -nw -l ~/.emacs.d/minimal-init.el $*
 
 (setq make-backup-files nil
       auto-save-default nil
