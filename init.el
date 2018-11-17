@@ -258,11 +258,14 @@
 (use-package zenburn-theme :ensure t
   :config
   (load-theme 'zenburn t)
-  (custom-theme-set-faces 'zenburn
-                          `(org-level-2 ((t (:foreground "#93E0E3"))))   ; zenburn-cyan
-                          `(org-level-3 ((t (:foreground "#9C6363"))))   ; zenburn-red-3
-                          `(org-archived ((t (:foreground "#656555"))))  ; zenburn-fg-1
-                          ))
+  (custom-theme-set-faces
+   'zenburn
+   `(highlight    ((t (:background "#494949"))))  ; zenburn-bg+05
+   `(hl-line      ((t (:background "#494949"))))  ; zenburn-bg+05
+   `(org-level-2  ((t (:foreground "#93E0E3"))))  ; zenburn-cyan
+   `(org-level-3  ((t (:foreground "#9C6363"))))  ; zenburn-red-3
+   `(org-archived ((t (:foreground "#656555"))))  ; zenburn-fg-1
+   ))
 
 ;; load and configure graphviz mode
 (use-package graphviz-dot-mode :ensure t
