@@ -258,6 +258,11 @@
         ivy-use-virtual-buffers t
         ivy-count-format "(%d/%d) "
         ivy-dynamic-exhibit-delay-ms 200)
+  ;; Update which-function after a match is visualized without closing ivy
+  ;; (C-M-m, C-M-n, C-M-p) or in swiper with each highlighted result
+  (defun which-func-update-ivy () (which-func-update-1 (ivy--get-window ivy-last)))
+  (advice-add 'ivy-call :after #'which-func-update-ivy)
+  (advice-add 'swiper--update-input-ivy :after #'which-func-update-ivy)
   :bind
   ("C-c M-x" . execute-extended-command)
   ("C-s" . swiper)
