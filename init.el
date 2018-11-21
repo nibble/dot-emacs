@@ -70,6 +70,34 @@
   :config
   (setq server-auth-dir (expand-file-name "cache/server" user-emacs-directory)))
 
+;; configure abbrev-mode
+(use-package abbrev
+  :defer t
+  :diminish abbrev-mode
+  :config
+  (setq save-abbrevs nil))
+
+;; move and kill-word by each CamelCase subword
+(use-package subword
+  :defer t
+  :diminish subword-mode
+  :hook (prog-mode . subword-mode))
+
+;; configure hideshow to fold regions
+(use-package hideshow
+  :defer t
+  :diminish hs-minor-mode
+  :config
+  (setq hs-hide-comments nil  ;; also hide comments with hs-hide-all
+		hs-isearch-open 'x)   ;; isearch enters hidden text blocks
+  :hook (prog-mode . hs-minor-mode)
+  :bind
+  ;; f8 & f9, C-f8 & C-f9, for hs-minor-mode folding
+  ("<f8>" . hs-hide-block)
+  ("<f9>" . hs-show-block)
+  ("C-<f8>" . hs-hide-all)
+  ("C-<f9>" . hs-show-all))
+
 ;; easy-kill replaces M-w with different actions, ? for help
 (use-package easy-kill :ensure t
   :config
@@ -141,7 +169,7 @@
   :config
   (when (boundp 'scroll-bar-mode)
     (scroll-bar-mode -1))
-  (setq nyan-bar-length 20)
+  (setq nyan-bar-length 15)
   (nyan-mode t))
 
 ;; M-x rainbow-mode to print color strings with colored background and
@@ -686,9 +714,6 @@
 ;; constant width of unix manual pages viewer
 (setq Man-width 79)
 
-;; make kill-word works for CamelCase words
-(add-hook 'prog-mode-hook 'subword-mode)
-
 ;; diverse configurations to emulate Microsoft Visual Studio or improve usage in Windows
 (if (eq system-type 'windows-nt)
     (progn
@@ -722,7 +747,6 @@
             (c-set-style my-c-style-to-use)
             (when (derived-mode-p 'c-mode 'c++-mode 'java-mode)
               (ggtags-mode 1))
-            (hs-minor-mode t)
             (font-lock-add-keywords
              nil
              '(("\\<\\(FIXME\\|TODO\\|BUG\\|JDONAIRE\\|NOTE\\|NOTA\\|ASSUMPTION\\):"
@@ -784,12 +808,6 @@
       ada-language-version 'ada83
       ada-which-compiler 'generic
       ada-fill-comment-prefix "-- ")
-
-;; also hide comments with hs-hide-all
-(setq hs-hide-comments nil)
-
-;; isearch enters hidden text blocks
-(setq hs-isearch-open 'x)
 
 ;; active Org-babel languages
 (org-babel-do-load-languages
@@ -1276,12 +1294,6 @@
 (global-set-key (kbd "S-C-<right>") 'enlarge-window-horizontally)
 (global-set-key (kbd "S-C-<down>") 'shrink-window)
 (global-set-key (kbd "S-C-<up>") 'enlarge-window)
-
-;; f8 & f9, C-f8 & C-f9, for hs-minor-mode folding
-(global-set-key (kbd "<f8>") 'hs-hide-block)
-(global-set-key (kbd "<f9>") 'hs-show-block)
-(global-set-key (kbd "C-<f8>") 'hs-hide-all)
-(global-set-key (kbd "C-<f9>") 'hs-show-all)
 
 ;; M-_ to complete words
 ;; another key press cicles through the matching words
