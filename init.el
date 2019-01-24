@@ -729,8 +729,10 @@
       (setq auto-save-default nil)
       (setq ggtags-highlight-tag nil)  ; deactivated because it is too slow in windows
       (setq counsel--git-grep-count-threshold -1)  ; don't preload every git grep result on invocation, terrible for huge repos
-      ;; (global-set-key (kbd "C-c k") 'counsel-ag)  ; in windows it is faster than rg
+      ;; (global-set-key (kbd "C-c k") 'counsel-ag)  ; in windows it's faster than rg; deactivated: it hangs even more
       (global-disable-mouse-mode)  ; ignore mouse to compensate slopy focus missing in Windows desktop
+      (when (>= emacs-major-version 25)
+        (setq inhibit-compacting-font-caches t))  ; mitigate slowdowns with undisplayable unicode chars
       (setq browse-url-browser-function 'browse-url-chrome)
       (setq my-c-style-to-use "microsoft"))
   (setq my-c-style-to-use "stroustrup"))
