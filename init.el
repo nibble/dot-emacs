@@ -361,6 +361,14 @@
 (use-package go-mode :ensure t
   :defer t)
 
+;; rust mode
+(use-package rust-mode :ensure t
+  :defer t)
+
+;; toml mode
+(use-package toml-mode :ensure t
+  :defer t)
+
 ;; yaml mode
 (use-package yaml-mode :ensure t
   :defer t)
