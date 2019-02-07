@@ -736,6 +736,7 @@
       (setq-default tab-width 4)
       (setq auto-save-default nil)
       (setq ggtags-highlight-tag nil)  ; deactivated because it is too slow in windows
+      (setq ggtags-oversize-limit (* 1 1024 1024))  ; reduce threshold to update whole GTAGS
       (setq counsel--git-grep-count-threshold -1)  ; don't preload every git grep result on invocation, terrible for huge repos
       ;; (global-set-key (kbd "C-c k") 'counsel-ag)  ; in windows it's faster than rg; deactivated: it hangs even more
       (global-disable-mouse-mode)  ; ignore mouse to compensate slopy focus missing in Windows desktop
