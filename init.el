@@ -282,10 +282,11 @@
   ("M-y" . counsel-yank-pop))
 
 ;; load and configure magit
-(use-package magit :ensure t
-  :defer t
-  :bind
-  ("C-x g" . magit-status))
+(when (>= emacs-major-version 25)
+  (use-package magit :ensure t
+    :defer t
+    :bind
+    ("C-x g" . magit-status)))
 
 ;; load and configure zenburn theme
 (use-package zenburn-theme :ensure t
