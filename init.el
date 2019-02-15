@@ -103,7 +103,9 @@
   :config
   (setq transient-mark-mode t)  ; unfortunately it doesn't work if disabled :(
   (global-set-key [remap kill-ring-save] #'easy-kill)
-  (global-set-key [remap mark-sexp] #'easy-mark))
+  (global-set-key [remap mark-sexp] #'easy-mark)
+  ;; use word-strictly to select whole words even if subword-mode is active
+  (setcar easy-kill-alist '(?w word-strictly " ")))
 
 ;; don't activate the region with C-x C-x, needed with transient-mark-mode
 ;; https://www.masteringemacs.org/article/fixing-mark-commands-transient-mark-mode
