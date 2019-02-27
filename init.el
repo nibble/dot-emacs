@@ -535,9 +535,6 @@
 ;; cursor doesn't blink
 (blink-cursor-mode -1)
 
-;; make cursor the width of the character it is under, ie: full width of a TAB
-(setq x-stretch-cursor t)
-
 ;; enable narrow
 (put 'narrow-to-region 'disabled nil)
 
@@ -641,6 +638,9 @@
 ;; never use tabs for indenting
 (setq-default indent-tabs-mode nil)
 
+;; backspace removes tabs instead of untabifying and removing just one space
+(setq backward-delete-char-untabify-method nil)
+
 ;; period single space ends sentence
 (setq sentence-end-double-space nil)
 
@@ -733,10 +733,7 @@
 ;; diverse configurations to emulate Microsoft Visual Studio or improve usage in Windows
 (if (eq system-type 'windows-nt)
     (progn
-      (setq x-stretch-cursor nil)
       (prefer-coding-system 'utf-8-dos)
-      (setq-default indent-tabs-mode t)
-      (setq-default tab-width 4)
       (setq auto-save-default nil)
       (setq ggtags-highlight-tag nil)  ; deactivated because it is too slow in windows
       (setq ggtags-oversize-limit (* 1 1024 1024))  ; reduce threshold to update whole GTAGS
@@ -746,6 +743,10 @@
       (when (>= emacs-major-version 25)
         (setq inhibit-compacting-font-caches t))  ; mitigate slowdowns with undisplayable unicode chars
       (setq browse-url-browser-function 'browse-url-chrome)
+      (add-hook 'c-mode-common-hook
+                (lambda ()
+                  (setq indent-tabs-mode t)
+                  (setq tab-width 4)))
       (setq my-c-style-to-use "microsoft"))
   (setq my-c-style-to-use "stroustrup"))
 
