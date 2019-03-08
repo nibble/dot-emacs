@@ -119,16 +119,17 @@
 ;; third party emacs mode for using global tags
 (when (>= emacs-major-version 25)
   (use-package ggtags :ensure t
+    :diminish ggtags-mode
     :bind ("C-." . ggtags-find-reference)))
 
 ;; eldoc prints in the minibuffer the definition of the function at point.
 ;; Activation needed only for older emacs versions, as it is now globally
 ;; enabled by default
-(when (< emacs-major-version 25)
-  (use-package eldoc
-    :diminish eldoc-mode
-    :config
-    (setq eldoc-idle-delay 0.5)
+(use-package eldoc
+  :diminish eldoc-mode
+  :config
+  (setq eldoc-idle-delay 0.5)
+  (when (< emacs-major-version 25)
     (add-hook 'emacs-lisp-mode-hook 'turn-on-eldoc-mode)
     (add-hook 'lisp-interaction-mode-hook 'turn-on-eldoc-mode)
     (add-hook 'c-mode-hook 'turn-on-eldoc-mode)
@@ -155,6 +156,7 @@
 
 ;; remove trailing whitespace on save only on the touched lines
 (use-package ws-butler :ensure t
+  :diminish ws-butler-mode
   :config (ws-butler-global-mode 1))
 
 ;; remember point position on closing files
@@ -171,7 +173,7 @@
   :config
   (when (boundp 'scroll-bar-mode)
     (scroll-bar-mode -1))
-  (setq nyan-bar-length 15)
+  (setq nyan-bar-length 10)
   (nyan-mode t))
 
 ;; M-x rainbow-mode to print color strings with colored background and
