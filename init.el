@@ -227,6 +227,9 @@
   :pin org
   :mode ("\\.org$" . org-mode)
   :config
+  ;; increase number of lines in which emphasis markup will be applied
+  (setcar (nthcdr 4 org-emphasis-regexp-components) 6)
+  (org-set-emph-re 'org-emphasis-regexp-components org-emphasis-regexp-components)
   ;; load additional export methods
   (require 'ox-odt nil t)
   (require 'ox-md nil t)
