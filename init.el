@@ -740,6 +740,7 @@
     (progn
       (prefer-coding-system 'utf-8-dos)
       (setq auto-save-default nil)
+      (setq make-backup-files nil)
       (setq ggtags-highlight-tag nil)  ; deactivated because it is too slow in windows
       (setq ggtags-oversize-limit (* 1 1024 1024))  ; reduce threshold to update whole GTAGS
       (setq counsel--git-grep-count-threshold -1)  ; don't preload every git grep result on invocation, terrible for huge repos
@@ -962,14 +963,14 @@
 ;;  cool little functions
 ;;--------------------------------------------------------------------
 
-;; inhibit backups, or store them in ~/.emacs.d/cache/backup if exists
+;; if backups are enabled, store them in ~/.emacs.d/cache/backup if it exists.
+;; if not, a single backup file will be kept in ~/.emacs.d/cache/%backup%~
 (defun make-backup-file-name (file-name)
-  "Create the non-numeric backup file name for `file-name'."
   (let ((dir (expand-file-name "cache/backup/" user-emacs-directory)))
     (if (file-directory-p dir)
         (concat (expand-file-name dir)
                 (dired-replace-in-string "/" "|" file-name))
-      "")))
+      (concat (expand-file-name "cache/%backup%~" user-emacs-directory)))))
 
 ;; insert a path into the buffer with completion
 (defun insert-path ()
@@ -1442,7 +1443,8 @@
 ;;
 ;; - deactivate auto indentation: c-toggle-electric-state
 ;;
-;; - show line numbers like vim: setnu-mode or linum-mode (emacs23)
+;; - show line numbers like vim: (global-)display-line-numbers-mode (emacs26)
+;;   or linum-mode (emacs23) or setnu-mode (older versions)
 ;;
 ;; - ivy / swiper / counsel
 ;;   - git grep: C-c p
@@ -1473,9 +1475,9 @@
 ;;   - replace in files
 ;;     - search with ivy, ie: counsel-git-grep, counsel-rg, counsel-ag, ...
 ;;     - open occur buffer with C-c C-o (ivy-occur)
-;;     - toggle occur buffer to writable: C-x C-q (ivy-wgrep-change-to-wgrep-mode)
-;;     - edit buffer, apply with C-c C-c (wgrep-finish-edit) or reject with C-x C-k (wgrep-abort-changes)
-;;     - save all buffers: C-x s
+;;     - toggle occur buffer to writable: w (ivy-wgrep-change-to-wgrep-mode)
+;;     - edit buffer, apply with C-c C-c (wgrep-finish-edit) or reject with C-c C-k (wgrep-abort-changes)
+;;     - save all buffers: C-x s  (followed by ! when asked)
 ;;
 ;; - tags
 ;;   - definition: M-.    global:gtags-find-tag   etags:find-tag  next: C-u M-.
