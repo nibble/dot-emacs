@@ -293,7 +293,12 @@
   (use-package magit :ensure t
     :defer t
     :bind
-    ("C-x g" . magit-status)))
+    ("C-x g" . magit-status)
+    :config
+    ;; ensure buffers are always shown in other window
+    (defun my-magit-display-file-buffer (buffer)
+      (pop-to-buffer buffer t))
+    (setq magit-display-file-buffer-function 'my-magit-display-file-buffer)))
 
 ;; load and configure zenburn theme
 (use-package zenburn-theme :ensure t
