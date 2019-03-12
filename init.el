@@ -338,6 +338,11 @@
   :config
   (setq disable-mouse-mode-global-lighter ""))
 
+;; disk usage tool
+(when (>= emacs-major-version 26)
+  (use-package disk-usage :ensure t
+    :defer t))
+
 ;; git-timemachine to browse different file revisions (n|ext, p|revious,
 ;; q|uit). Launch with M-x git-timemachine or with C-x v t (M-x
 ;; my-git-timemachine) for ivy-like interface
