@@ -597,6 +597,9 @@
 (progn (setq auto-revert-interval 5)
        (global-auto-revert-mode t))
 
+;; open links to files in version control without asking
+(setq vc-follow-symlinks nil)
+
 ;; prevents M-z to minimize frame
 (defun iconify-or-deiconify-frame (&optional frame)
   (message "Iconify key disabled, use M-x iconify-frame"))
