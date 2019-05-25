@@ -621,11 +621,16 @@
       (expand-file-name "cache/auto-save-list/.saves-" user-emacs-directory))
 
 ;; set history file location to ~/.emacs.d/cache/history
-(setq savehist-file (expand-file-name "cache/history" user-emacs-directory))
+(setq savehist-file
+      (expand-file-name "cache/history" user-emacs-directory))
 
 ;; put url cache directory inside ~/.emacs.d/cache
 (setq url-configuration-directory
       (expand-file-name "cache/url" user-emacs-directory))
+
+;; put game scores directory inside ~/.emacs.d/cache
+(setq gamegrid-user-score-file-directory
+      (expand-file-name "cache/games" user-emacs-directory))
 
 ;; keep minibuffer history
 (savehist-mode 1)
