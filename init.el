@@ -345,14 +345,15 @@
 
 ;; git-timemachine to browse different file revisions (n|ext, p|revious,
 ;; q|uit). Launch with M-x git-timemachine or with C-x v t (M-x
-;; my-git-timemachine) for ivy-like interface
+;; counsel-git-timemachine) for ivy-like interface
 (when (>= emacs-major-version 25)
   (use-package git-timemachine :ensure t
     :defer t
     :config
+    (setq git-timemachine-abbreviation-length 8)
     ;; ivy integration
     ;; http://blog.binchen.org/posts/new-git-timemachine-ui-based-on-ivy-mode.html
-    (defun my-git-timemachine-show-selected-revision ()
+    (defun counsel-git-timemachine-show-selected-revision ()
       "Show last (current) revision of file."
       (interactive)
       (let* ((collection (mapcar (lambda (rev)
@@ -367,14 +368,14 @@
                               (setq rev (cdr rev)))
                             (git-timemachine-show-revision rev)))))
 
-    (defun my-git-timemachine ()
+    (defun counsel-git-timemachine ()
       "Open git snapshot with the selected version.  Based on ivy-mode."
       (interactive)
       (unless (featurep 'git-timemachine)
         (require 'git-timemachine))
-      (git-timemachine--start #'my-git-timemachine-show-selected-revision))
+      (git-timemachine--start #'counsel-git-timemachine-show-selected-revision))
     :bind
-    ("C-x v t" . my-git-timemachine)))
+    ("C-x v t" . counsel-git-timemachine)))
 
 ;; golang mode
 (use-package go-mode :ensure t
@@ -757,22 +758,39 @@
 ;; diverse configurations to emulate Microsoft Visual Studio or improve usage in Windows
 (if (eq system-type 'windows-nt)
     (progn
+      ;;
+      ;; more suitable behaviour in windows
       (prefer-coding-system 'utf-8-dos)
+      (global-disable-mouse-mode)  ; ignore mouse to compensate slopy focus missing in Windows desktop
+      (setq browse-url-browser-function 'browse-url-chrome)
+      ;;
+      ;; speed up emacs in windows
       (setq auto-save-default nil)
       (setq make-backup-files nil)
       (setq ggtags-highlight-tag nil)  ; deactivated because it is too slow in windows
       (setq ggtags-oversize-limit (* 1 1024 1024))  ; reduce threshold to update whole GTAGS
       (setq counsel--git-grep-count-threshold -1)  ; don't preload every git grep result on invocation, terrible for huge repos
-      ;; (global-set-key (kbd "C-c k") 'counsel-ag)  ; in windows it's faster than rg; deactivated: it hangs even more
-      (global-disable-mouse-mode)  ; ignore mouse to compensate slopy focus missing in Windows desktop
+      ;; (global-set-key (kbd "C-c k") 'counsel-ag)  ; in windows it seems to be faster than rg; deactivated: it hangs even more
       (when (>= emacs-major-version 25)
         (setq inhibit-compacting-font-caches t))  ; mitigate slowdowns with undisplayable unicode chars
-      (setq browse-url-browser-function 'browse-url-chrome)
+      ;;
+      ;; workaround if common unix commands or git can't be run (ex: magit)
+      ;; (setq explicit-shell-file-name
+      ;;       "C:/Program Files/Git/bin/bash.exe")
+      ;; (setq shell-file-name explicit-shell-file-name)
+      ;; (add-to-list 'exec-path "C:/Program Files/Git/bin")
+      ;;
+      ;; make C indenting similar to Visual Studio
       (add-hook 'c-mode-common-hook
                 (lambda ()
                   (setq indent-tabs-mode t)
-                  (setq tab-width 4)))
+                  (setq tab-width 4)
+                  ;; (setq buffer-display-table (make-display-table))
+                  ;; (aset buffer-display-table ?\^M [])  ; hide ^M when a file has both unix and dos line endings
+                  ))
       (setq my-c-style-to-use "microsoft"))
+  ;;
+  ;; set default C style when not in windows
   (setq my-c-style-to-use "stroustrup"))
 
 ;; C style that emulates Microsoft Visual Studio
