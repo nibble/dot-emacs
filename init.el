@@ -24,12 +24,20 @@
 ;; elpa
 (when (>= emacs-major-version 24)
   (require 'package)
+
   ;; prevent writing package-selected-packages custom variable
   (defun package--save-selected-packages (&optional value) nil)
-  ;; add repositories
-  (add-to-list 'package-archives '("melpa-stable" . "http://stable.melpa.org/packages/") t)
-  (add-to-list 'package-archives '("melpa" . "http://melpa.org/packages/") t)
-  (add-to-list 'package-archives '("org" . "http://orgmode.org/elpa/") t)
+
+  ;; disable repository signature check (uncomment if needed)
+  ;; (setq package-check-signature nil)
+
+  ;; set repositories
+  (setq package-archives
+        '(("gnu" . "https://elpa.gnu.org/packages/")
+          ("melpa-stable" . "https://stable.melpa.org/packages/")
+          ("melpa" . "https://melpa.org/packages/")
+          ("org" . "https://orgmode.org/elpa/")))
+
   (package-initialize)
   (setq package-enable-at-startup nil))
 
