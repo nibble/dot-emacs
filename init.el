@@ -238,11 +238,28 @@
   ;; increase number of lines in which emphasis markup will be applied
   (setcar (nthcdr 4 org-emphasis-regexp-components) 6)
   (org-set-emph-re 'org-emphasis-regexp-components org-emphasis-regexp-components)
+  ;; change to a light theme when exporting, so the syntax highlight is visible
+  ;; with a white background
+  ;; https://correl.phoenixinquis.net/2016/02/23/org-publish-with-theme.html
+  (defun my/with-theme (theme fn &rest args)
+    (let ((current-themes custom-enabled-themes))
+      (mapcar #'disable-theme custom-enabled-themes)
+      (load-theme theme t)
+      (let ((result (apply fn args)))
+        (mapcar #'disable-theme custom-enabled-themes)
+        (mapcar (lambda (theme) (load-theme theme t)) current-themes)
+        result)))
+  (advice-add #'org-export-to-file :around (apply-partially #'my/with-theme 'tsdh-light))
+  (advice-add #'org-export-to-buffer :around (apply-partially #'my/with-theme 'tsdh-light))
   ;; load additional export methods
   (require 'ox-odt nil t)
   (require 'ox-md nil t)
   (require 'ox-freemind nil t)
   (require 'ox-texinfo nil t))
+
+;; htmlize is used by org-mode on export to syntax highlight source code blocks
+(use-package htmlize :ensure t
+  :defer t)
 
 ;; move current line or region with M-up / M-down
 (use-package move-text :ensure t
