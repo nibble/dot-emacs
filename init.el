@@ -769,9 +769,23 @@
 (setq dired-omit-files
       (concat dired-omit-files "\\|^\\..+$"))
 
-;; dabbrev completions matches case
+;; dabbrev completion matches case
 (setq dabbrev-case-fold-search nil
       dabbrev-case-replace nil)
+
+;; hippie completion configuration
+(setq-default case-fold-search nil)
+(setq case-replace nil
+      hippie-expand-try-functions-list '(try-expand-dabbrev
+                                         try-expand-dabbrev-all-buffers
+                                         try-expand-dabbrev-from-kill
+                                         try-complete-file-name-partially
+                                         try-complete-file-name
+                                         try-expand-all-abbrevs
+                                         try-expand-list
+                                         try-expand-line
+                                         try-complete-lisp-symbol-partially
+                                         try-complete-lisp-symbol))
 
 ;; set cache dir for semantic so it doesn't leave all its shit everywhere
 (setq semanticdb-default-save-directory
@@ -1385,8 +1399,7 @@
 
 ;; M-_ to complete words
 ;; another key press cicles through the matching words
-;; a space and another press makes it complete ulterior expressions
-(global-set-key (kbd "M-_") 'dabbrev-expand)
+(global-set-key (kbd "M-_") 'hippie-expand)
 
 ;; C-M-_ for dabbrev-completion
 (global-set-key (kbd "C-M-_") 'dabbrev-completion)
