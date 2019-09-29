@@ -3,7 +3,7 @@
 ;;--------------------------------------------------------------------
 
 ;;--------------------------------------------------------------------
-;;  configurations that need to be applied before a library is loaded
+;;  configurations that have to be applied before a library is loaded
 ;;--------------------------------------------------------------------
 
 ;; undo some of the winluser-friendly changes introduced in emacs23
@@ -43,10 +43,10 @@
 
 ;; force a package refresh when the first package of a session is installed
 ;; https://github.com/jwiegley/use-package/issues/256
-(defun my-package-install-refresh-contents (&rest args)
+(defun my/package-install-refresh-contents (&rest args)
   (package-refresh-contents)
-  (advice-remove 'package-install 'my-package-install-refresh-contents))
-(advice-add 'package-install :before 'my-package-install-refresh-contents)
+  (advice-remove 'package-install 'my/package-install-refresh-contents))
+(advice-add 'package-install :before 'my/package-install-refresh-contents)
 
 ;; ensure use-package is installed and configure it
 (unless (package-installed-p 'use-package)
@@ -117,12 +117,12 @@
 
 ;; don't activate the region with C-x C-x, needed with transient-mark-mode
 ;; https://www.masteringemacs.org/article/fixing-mark-commands-transient-mark-mode
-(defun exchange-point-and-mark-no-activate ()
+(defun my/exchange-point-and-mark-no-activate ()
   "Identical to \\[exchange-point-and-mark] but will not activate the region."
   (interactive)
   (exchange-point-and-mark)
   (deactivate-mark nil))
-(define-key global-map [remap exchange-point-and-mark] 'exchange-point-and-mark-no-activate)
+(define-key global-map [remap exchange-point-and-mark] 'my/exchange-point-and-mark-no-activate)
 
 ;; third party emacs mode for using global tags
 (when (>= emacs-major-version 25)
@@ -184,12 +184,12 @@
   (setq nyan-bar-length 10)
   (nyan-mode t))
 
-;; M-x rainbow-mode to print color strings with colored background and
+;; M-x rainbow-mode to print color strings with colored background
 (use-package rainbow-mode :ensure t
   :defer t
   :hook css-mode)
 
-;; Show parenthesis with different colors
+;; show parenthesis with different colors
 (use-package rainbow-delimiters :ensure t
   :hook (prog-mode . rainbow-delimiters-mode))
 
@@ -224,8 +224,8 @@
   :defer t
   :config
   (setq ledger-default-date-format "%Y-%m-%d"
-        ledger-reconcile-default-commodity "EUR"
         ledger-use-iso-dates t
+        ledger-reconcile-default-commodity "EUR"
         ledger-narrow-on-reconcile nil
         ledger-highlight-xact-under-point nil))
 
@@ -255,7 +255,11 @@
   (require 'ox-odt nil t)
   (require 'ox-md nil t)
   (require 'ox-freemind nil t)
-  (require 'ox-texinfo nil t))
+  (require 'ox-texinfo nil t)
+  ;; enable org-babel languages
+  (org-babel-do-load-languages 'org-babel-load-languages
+                               '(;; other Babel languages
+                                 (plantuml . t))))
 
 ;; htmlize is used by org-mode on export to syntax highlight source code blocks
 (use-package htmlize :ensure t
@@ -292,9 +296,9 @@
         ivy-dynamic-exhibit-delay-ms 200)
   ;; Update which-function after a match is visualized without closing ivy
   ;; (C-M-m, C-M-n, C-M-p) or in swiper with each highlighted result
-  (defun which-func-update-ivy () (which-func-update-1 (ivy--get-window ivy-last)))
-  (advice-add 'ivy-call :after #'which-func-update-ivy)
-  (advice-add 'swiper--update-input-ivy :after #'which-func-update-ivy)
+  (defun my/which-func-update-ivy () (which-func-update-1 (ivy--get-window ivy-last)))
+  (advice-add 'ivy-call :after #'my/which-func-update-ivy)
+  (advice-add 'swiper--update-input-ivy :after #'my/which-func-update-ivy)
   :bind
   ("C-c M-x" . execute-extended-command)
   ("C-s" . swiper)
@@ -321,9 +325,9 @@
     ("C-x g" . magit-status)
     :config
     ;; ensure buffers are always shown in other window
-    (defun my-magit-display-file-buffer (buffer)
+    (defun my/magit-display-file-buffer (buffer)
       (pop-to-buffer buffer t))
-    (setq magit-display-file-buffer-function 'my-magit-display-file-buffer)))
+    (setq magit-display-file-buffer-function 'my/magit-display-file-buffer)))
 
 ;; load and configure zenburn theme
 (use-package zenburn-theme :ensure t
@@ -426,7 +430,7 @@
 (use-package nhexl-mode :ensure t
   :defer t)
 
-;; zoom-frm (local lisp files) to zoom frame instead of buffer
+;; zoom-frm (local lisp files) to zoom whole frame instead of buffer text
 (use-package frame-fns)
 (use-package frame-cmds)
 (use-package zoom-frm
@@ -450,7 +454,7 @@
                                    'font-lock-face 'font-lock-function-name-face))
   ;; Use 'y' to copy the date under the cursor, close the calendar, and yank it
   ;; into the buffer. Inspired by Ian Yang's iy/calendar-copy-date
-  (defun calendar-copy-date ()
+  (defun my/calendar-copy-date ()
     (interactive)
     (let ((date (calendar-cursor-to-date t))
           (format "%Y-%m-%d"))
@@ -459,7 +463,7 @@
       (kill-new string)
       (calendar-exit)
       (yank)))
-  (define-key calendar-mode-map (kbd "y") 'calendar-copy-date))
+  (define-key calendar-mode-map (kbd "y") 'my/calendar-copy-date))
 
 ;; git-gutter marks modified chunks in the file and performs some git commands.
 ;; It should be installed at the end because it will analyse any open file and
@@ -500,7 +504,7 @@
 ;; (setenv "PATH"
 ;;         (concat "C:/Program Files/Git/usr/bin" ";" (getenv "PATH")))
 
-;; set choosed font
+;; set selected font
 (cond ((>= emacs-major-version 23)
        (add-to-list 'default-frame-alist `(font . ,cfg-font-ttf)))
       ((>= emacs-major-version 22)
@@ -514,11 +518,11 @@
 ;;--------------------------------------------------------------------
 
 ;; ediff (bojohan): emacs -diff file1 file2
-(defun command-line-diff (switch)
+(defun my/command-line-diff (switch)
   (let ((file1 (pop command-line-args-left))
         (file2 (pop command-line-args-left)))
     (ediff file1 file2)))
-(add-to-list 'command-switch-alist '("-diff" . command-line-diff))
+(add-to-list 'command-switch-alist '("-diff" . my/command-line-diff))
 
 
 ;;--------------------------------------------------------------------
@@ -556,13 +560,13 @@
 ;; fix some cases in which a new emacsclient frame appears below other
 ;; windows in gnome 3
 ;; https://askubuntu.com/questions/283711/application-focus-of-emacsclient-frame
-(defun px-raise-frame-and-give-focus ()
+(defun my/px-raise-frame-and-give-focus ()
   (when window-system
     (raise-frame)
     ;; (x-focus-frame (selected-frame))
     ;; (set-mouse-pixel-position (selected-frame) 4 4)
     ))
-(add-hook 'server-switch-hook 'px-raise-frame-and-give-focus)
+(add-hook 'server-switch-hook 'my/px-raise-frame-and-give-focus)
 
 ;; frame title format "name of buffer [emacsXY]"
 (setq frame-title-format (format "%%b [emacs%d]" emacs-major-version))
@@ -586,13 +590,13 @@
 ;; support ansi color in shell
 (add-hook 'shell-mode-hook 'ansi-color-for-comint-mode-on)
 
-;; prevents removing of prompt characters
+;; prevent removing of prompt characters in shell modes
 (setq comint-prompt-read-only t)
 
-;; ignore duplicate commands at browsing history
+;; ignore duplicate commands when browsing history in shell modes
 (setq comint-input-ignoredups t)
 
-;; configure shell modes scroll
+;; configure scrolling in shell modes
 ;;(setq comint-scroll-show-maxiumum-output)
 (setq comint-scroll-to-bottom-on-input t)
 
@@ -638,7 +642,7 @@
 (windmove-default-keybindings)
 
 ;; recover windows placement with winner-undo/winner-redo, don't use
-;; keybindings C-c left/right to have then available for picture-mode
+;; keybindings C-c left/right to have them available for picture-mode
 (progn (setq winner-dont-bind-my-keys t)
        (winner-mode 1))
 
@@ -723,13 +727,13 @@
 ;; middle mouse button paste at cursor position instead of mouse position
 (setq mouse-yank-at-point t)
 
-;; after copy Ctrl+c in X11 apps, you can paste by `yank' in emacs
+;; after copy Ctrl+c in X11 apps, paste it using `yank' in emacs
 (setq x-select-enable-clipboard t)
 
-;; after mouse selection in X11, you can paste by `yank' in emacs
+;; after mouse selection in X11, paste it using `yank' in emacs
 (setq x-select-enable-primary t)
 
-;; set fill column to a most sane value
+;; set a better fill column default value
 (setq-default fill-column 79)
 
 ;; don't add newlines at the end of the file when point reaches it
@@ -745,7 +749,7 @@
       compilation-window-height 16)
 
 ;; set default settings for grep function
-(setq grep-command "grep -nHIr -e ")
+;; (setq grep-command "grep -nHIr -e ")
 
 ;; enable downcase-region and upcase-region
 (put 'downcase-region 'disabled nil)
@@ -851,15 +855,15 @@
               (ggtags-mode 1))
             (font-lock-add-keywords
              nil
-             '(("\\<\\(FIXME\\|TODO\\|BUG\\|JDONAIRE\\|NOTE\\|NOTA\\|ASSUMPTION\\):"
+             '(("\\<\\(FIXME\\|TODO\\|BUG\\|NOTE\\|ASSUMPTION\\):"
                 1 font-lock-warning-face t)))))
 
 ;; settings for c++ mode
-(defun my-c++-setup ()
+(defun my/c++-setup ()
   (c-set-offset 'innamespace '0)    ;; don't indent inside namespace
   (c-set-offset 'inextern-lang '0)  ;; don't indent inside extern
   (c-set-offset 'inline-open '0))   ;; don't indent the opening bracket of a method
-(add-hook 'c++-mode-hook 'my-c++-setup)
+(add-hook 'c++-mode-hook 'my/c++-setup)
 
 ;; default compile command
 (setq compile-command "make")
@@ -910,12 +914,6 @@
       ada-language-version 'ada83
       ada-which-compiler 'generic
       ada-fill-comment-prefix "-- ")
-
-;; active Org-babel languages
-(org-babel-do-load-languages
- 'org-babel-load-languages
- '(;; other Babel languages
-   (plantuml . t)))
 
 ;; open files with .org extension with org-mode
 (add-to-list 'auto-mode-alist '("\\.org$" . org-mode))
@@ -1013,30 +1011,13 @@
 ;; 8.5 default, 10 max for no line wrapping in org-mode
 (setq ps-font-size '(7 . 10))
 
-;; when using ibuffer show grouped buffers
-(setq ibuffer-saved-filter-groups
-      '(("default"
-         ("Organization" (or (mode . diary-mode)
-                             (mode . org-mode)
-                             (mode . org-agenda-mode)))
-         ("Multimedia" (or (mode . emms-playlist-mode)
-                           (mode . emms-browser-mode)))
-         ("Files" (filename . ".*"))
-         ("File Management" (or (mode . dired-mode)
-                                (mode . shell-mode)))
-         ("Documentation" (or (mode . Info-mode)
-                              (mode . apropos-mode)
-                              (mode . woman-mode)
-                              (mode . help-mode)
-                              (mode . Man-mode))))))
-
 ;; default browser is firefox and new pages are opened in tabs
 (setq browse-url-browser-function 'browse-url-firefox
       browse-url-firefox-new-window-is-tab 't)
 
 
 ;;--------------------------------------------------------------------
-;;  cool little functions
+;;  useful little functions
 ;;--------------------------------------------------------------------
 
 ;; if backups are enabled, store them in ~/.emacs.d/cache/backup if it exists.
@@ -1183,7 +1164,7 @@
 (global-set-key [remap fill-paragraph] #'fill-or-unfill-paragraph)
 
 ;; open huge files as read-only (Trey Jackson)
-(defun tj-find-file-check-make-large-file-read-only-hook ()
+(defun my/find-file-check-make-large-file-read-only-hook ()
   "If a file is over a given size, make the buffer read only."
   (when (> (buffer-size) 10000000)
     (setq buffer-read-only t)
@@ -1191,7 +1172,7 @@
     (message "Buffer is set to read-only because it is large. Undo also disabled.")
     ;; (set-background-color "light yellow")
     ))
-(add-hook 'find-file-hooks 'tj-find-file-check-make-large-file-read-only-hook)
+(add-hook 'find-file-hooks 'my/find-file-check-make-large-file-read-only-hook)
 
 ;; eval last lisp expression and replace it with its value (Nathaniel Flath)
 (defun eval-and-replace ()
@@ -1204,8 +1185,8 @@
     (error (message "Invalid expression")
            (insert (current-kill 0)))))
 
-;; opens a shell in the current directory (Nathaniel Flath)
-(defun shell-current-directory ( )
+;; open a shell in the current directory (Nathaniel Flath)
+(defun shell-current-directory ()
   "Opens a shell in the current directory"
   (interactive)
   (shell (concat "shell-" default-directory "-shell" )))
@@ -1220,9 +1201,9 @@
     (when (stringp vcs-top-dir)
       (ad-set-arg 1 vcs-top-dir))))
 
-;; renames current buffer and file it is visiting (rejeep)
+;; rename current buffer and the file it is visiting (rejeep)
 (defun rename-file-and-buffer ()
-  "Renames current buffer and file it is visiting."
+  "Rename current buffer and the file it is visiting."
   (interactive)
   (let ((name (buffer-name))
         (filename (buffer-file-name)))
@@ -1246,16 +1227,15 @@
         (buffer-list)))
 
 ;; abort the minibuffer when using the mouse (Trey Jackson)
-(defun stop-using-minibuffer ()
+(defun my/stop-using-minibuffer ()
   "Kill the minibuffer"
   (when (and (>= (recursion-depth) 1) (active-minibuffer-window))
     (abort-recursive-edit)))
-(add-hook 'mouse-leave-buffer-hook 'stop-using-minibuffer)
+(add-hook 'mouse-leave-buffer-hook 'my/stop-using-minibuffer)
 
 ;; in ruby-mode, # key expands to #{} when typed inside a double quoted string
 ;; http://blog.senny.ch/blog/2012/10/06/emacs-tidbits-for-ruby-developers/
-(defun senny-ruby-interpolate ()
-  "In a double quoted string, interpolate."
+(defun my/ruby-interpolate ()
   (interactive)
   (insert "#")
   (when (and
@@ -1264,7 +1244,7 @@
     (insert "{}")
     (backward-char 1)))
 (eval-after-load 'ruby-mode
-  '(progn (define-key ruby-mode-map (kbd "#") 'senny-ruby-interpolate)))
+  '(progn (define-key ruby-mode-map (kbd "#") 'my/ruby-interpolate)))
 
 ;; colorize ansi color sequences
 ;; really slow! better remove ANSI sequences with ansi2text in Debian
@@ -1274,9 +1254,9 @@
   (let ((inhibit-read-only t))
     (ansi-color-apply-on-region (point-min) (point-max))))
 
-;; ediff 2 marked buffer in dired with the key 'e'
+;; ediff two files marked in dired with the key 'e'
 ;; https://oremacs.com/2017/03/18/dired-ediff/
-(defun ora-ediff-files ()
+(defun my/dired-ediff-files ()
   (interactive)
   (let ((files (dired-get-marked-files))
         (wnd (current-window-configuration)))
@@ -1295,11 +1275,11 @@
                       (setq ediff-after-quit-hook-internal nil)
                       (set-window-configuration wnd))))
       (error "no more than 2 files should be marked"))))
-(define-key dired-mode-map "e" 'ora-ediff-files)
+(define-key dired-mode-map "e" 'my/dired-ediff-files)
 
-;; report in the minibuffer the sum of every hours amount in the region, being
+;; report in the minibuffer the sum of every hour amount in the region, being
 ;; them in the form 1h or 2.3h
-(defun jd/sum-hours (beg end)
+(defun my/sum-hours (beg end)
   (interactive "r")
   (save-excursion
     (goto-char beg)
@@ -1733,5 +1713,5 @@
 
 
 ;;--------------------------------------------------------------------
-;;  automatic customizations
+;;  automatic customizations will be placed here to be moved later on
 ;;--------------------------------------------------------------------
