@@ -17,9 +17,9 @@
 (add-to-list 'load-path (expand-file-name "lisp/" user-emacs-directory))
 
 ;; ensure ~/.emacs.d/cache directory exists
-(let ((dir (expand-file-name "cache/" user-emacs-directory)))
-  (when (not (file-directory-p dir))
-    (make-directory dir nil)))
+(setq user-emacs-cache-directory (expand-file-name "cache/" user-emacs-directory))
+(when (not (file-directory-p user-emacs-cache-directory))
+  (make-directory user-emacs-cache-directory nil))
 
 ;; elpa
 (when (>= emacs-major-version 24)
@@ -76,7 +76,7 @@
 (use-package server
   :defer t
   :config
-  (setq server-auth-dir (expand-file-name "cache/server" user-emacs-directory)))
+  (setq server-auth-dir (expand-file-name "server" user-emacs-cache-directory)))
 
 ;; configure abbrev-mode
 (use-package abbrev
@@ -170,7 +170,7 @@
 ;; remember point position on closing files
 (use-package saveplace
   :config
-  (setq save-place-file (expand-file-name "cache/places" user-emacs-directory)
+  (setq save-place-file (expand-file-name "places" user-emacs-cache-directory)
         save-place-forget-unreadable-files nil)
   (if (>= emacs-major-version 25)
       (save-place-mode 1)
@@ -274,7 +274,7 @@
 ;; configure recentf to increase the history of ivy virtual buffers
 (use-package recentf
   :config
-  (setq recentf-save-file (expand-file-name "cache/recentf" user-emacs-directory)
+  (setq recentf-save-file (expand-file-name "recentf" user-emacs-cache-directory)
         recentf-max-saved-items 200))
 
 ;; load and configure ivy/swiper/counsel completion framework
@@ -284,7 +284,7 @@
 (use-package ivy-hydra :ensure t)
 (use-package smex :ensure t
   :config
-  (setq smex-save-file (expand-file-name "cache/smex-items" user-emacs-directory)))
+  (setq smex-save-file (expand-file-name "smex-items" user-emacs-cache-directory)))
 (use-package ivy :ensure t
   :diminish (ivy-mode . "")
   :init
@@ -319,6 +319,13 @@
 
 ;; load and configure magit
 (when (>= emacs-major-version 25)
+  (use-package transient :ensure t
+    :defer t
+    :init
+    (setq transient-levels-file (expand-file-name "transient/levels.el" user-emacs-cache-directory)
+          transient-values-file (expand-file-name "transient/values.el" user-emacs-cache-directory)
+          transient-history-file (expand-file-name "transient/history.el" user-emacs-cache-directory)))
+
   (use-package magit :ensure t
     :defer t
     :bind
@@ -327,7 +334,8 @@
     ;; ensure buffers are always shown in other window
     (defun my/magit-display-file-buffer (buffer)
       (pop-to-buffer buffer t))
-    (setq magit-display-file-buffer-function 'my/magit-display-file-buffer)))
+    (setq magit-display-file-buffer-function 'my/magit-display-file-buffer))
+  )
 
 ;; load and configure zenburn theme
 (use-package zenburn-theme :ensure t
@@ -648,19 +656,19 @@
 
 ;; put auto-save-list directory inside ~/.emacs.d/cache
 (setq auto-save-list-file-prefix
-      (expand-file-name "cache/auto-save-list/.saves-" user-emacs-directory))
+      (expand-file-name "auto-save-list/.saves-" user-emacs-cache-directory))
 
 ;; set history file location to ~/.emacs.d/cache/history
 (setq savehist-file
-      (expand-file-name "cache/history" user-emacs-directory))
+      (expand-file-name "history" user-emacs-cache-directory))
 
 ;; put url cache directory inside ~/.emacs.d/cache
 (setq url-configuration-directory
-      (expand-file-name "cache/url" user-emacs-directory))
+      (expand-file-name "url" user-emacs-cache-directory))
 
 ;; put game scores directory inside ~/.emacs.d/cache
 (setq gamegrid-user-score-file-directory
-      (expand-file-name "cache/games" user-emacs-directory))
+      (expand-file-name "games" user-emacs-cache-directory))
 
 ;; keep minibuffer history
 (savehist-mode 1)
@@ -791,9 +799,9 @@
                                          try-complete-lisp-symbol-partially
                                          try-complete-lisp-symbol))
 
-;; set cache dir for semantic so it doesn't leave all its shit everywhere
+;; set cache dir for semantic so it doesn't leave all its junk everywhere
 (setq semanticdb-default-save-directory
-      (expand-file-name "cache/semantic.cache" user-emacs-directory))
+      (expand-file-name "semantic.cache" user-emacs-cache-directory))
 
 ;; constant width of unix manual pages viewer
 (setq Man-width 79)
@@ -1023,11 +1031,11 @@
 ;; if backups are enabled, store them in ~/.emacs.d/cache/backup if it exists.
 ;; if not, a single backup file will be kept in ~/.emacs.d/cache/%backup%~
 (defun make-backup-file-name (file-name)
-  (let ((dir (expand-file-name "cache/backup/" user-emacs-directory)))
+  (let ((dir (expand-file-name "backup/" user-emacs-cache-directory)))
     (if (file-directory-p dir)
         (concat (expand-file-name dir)
                 (dired-replace-in-string "/" "|" file-name))
-      (concat (expand-file-name "cache/%backup%~" user-emacs-directory)))))
+      (concat (expand-file-name "%backup%~" user-emacs-cache-directory)))))
 
 ;; insert a path into the buffer with completion
 (defun insert-path ()
