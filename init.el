@@ -1023,6 +1023,12 @@
 (setq browse-url-browser-function 'browse-url-firefox
       browse-url-firefox-new-window-is-tab 't)
 
+;; disable security checks again TLS certificates
+(setq network-security-level 'low)
+
+;; place data about secure network connections in the cache directory
+(setq nsm-settings-file (expand-file-name "network-security.data" user-emacs-cache-directory))
+
 
 ;;--------------------------------------------------------------------
 ;;  useful little functions
