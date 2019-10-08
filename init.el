@@ -923,6 +923,9 @@
       ada-which-compiler 'generic
       ada-fill-comment-prefix "-- ")
 
+;; don't ask when loading files with some file local variables
+(setq safe-local-variable-values '((org-confirm-babel:evaluate . nil)))
+
 ;; open files with .org extension with org-mode
 (add-to-list 'auto-mode-alist '("\\.org$" . org-mode))
 
