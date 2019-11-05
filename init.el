@@ -477,6 +477,23 @@
       (yank)))
   (define-key calendar-mode-map (kbd "y") 'my/calendar-copy-date))
 
+;; configure emacs web browser
+(use-package eww
+  :defer t
+  :config
+  ;; https://emacs.stackexchange.com/questions/561/how-can-i-toggle-displaying-images-in-eww-without-a-page-refresh
+  (defun my/eww-toggle-images ()
+    "Toggle whether images are loaded and reload the current page from cache."
+    (interactive)
+    (setq-local shr-inhibit-images (not shr-inhibit-images))
+    (eww-reload t)
+    (message "Images are now %s" (if shr-inhibit-images "off" "on")))
+  (define-key eww-mode-map (kbd "I") #'my/eww-toggle-images)
+  (define-key eww-link-keymap (kbd "I") #'my/eww-toggle-images)
+  (setq-default shr-inhibit-images t)  ; hide images by default, toggle with `I`
+  (setq-default shr-use-fonts nil)     ; always use the editor default font, toggle with `F`
+)
+
 ;; git-gutter marks modified chunks in the file and performs some git commands.
 ;; It should be installed at the end because it will analyse any open file and
 ;; crash in Windows when installing from scratch, as it has to popen git for
