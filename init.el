@@ -807,7 +807,6 @@
       dabbrev-case-replace nil)
 
 ;; hippie completion configuration
-(setq-default case-fold-search nil)
 (setq case-replace nil
       hippie-expand-try-functions-list '(try-expand-dabbrev
                                          try-expand-dabbrev-all-buffers
@@ -819,6 +818,13 @@
                                          try-expand-line
                                          try-complete-lisp-symbol-partially
                                          try-complete-lisp-symbol))
+;; ensure hippie-expand searches match case
+;; https://stackoverflow.com/questions/8722301/force-hippie-expand-to-respect-capitalization
+(defadvice hippie-expand (around hippie-expand-case-fold)
+  "Try to do case-sensitive matching (not effective with all functions)."
+  (let ((case-fold-search nil))
+    ad-do-it))
+(ad-activate 'hippie-expand)
 
 ;; set cache dir for semantic so it doesn't leave all its junk everywhere
 (setq semanticdb-default-save-directory

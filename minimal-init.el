@@ -6,8 +6,7 @@
 ;;   #!/bin/sh
 ;;   exec emacs -Q -nw -l ~/.emacs.d/minimal-init.el $*
 
-(setq-default indent-tabs-mode nil
-              case-fold-search nil)
+(setq-default indent-tabs-mode nil)
 
 (setq make-backup-files nil
       auto-save-default nil
@@ -16,17 +15,8 @@
       visible-bell t
       initial-scratch-message nil
       global-eldoc-mode nil
-      case-replace nil
-      hippie-expand-try-functions-list '(try-expand-dabbrev
-                                         try-expand-dabbrev-all-buffers
-                                         try-expand-dabbrev-from-kill
-                                         try-complete-file-name-partially
-                                         try-complete-file-name
-                                         try-expand-all-abbrevs
-                                         try-expand-list
-                                         try-expand-line
-                                         try-complete-lisp-symbol-partially
-                                         try-complete-lisp-symbol))
+      dabbrev-case-fold-search nil
+      dabbrev-case-replace nil)
 
 (prefer-coding-system 'utf-8-unix)
 (fset 'yes-or-no-p 'y-or-n-p)
@@ -39,7 +29,7 @@
 (windmove-default-keybindings)
 
 (global-set-key [?\M-;] 'comment-or-uncomment-region)
-(global-set-key [?\M-_] 'hippie-expand)
+(global-set-key [?\M-_] 'dabbrev-expand)
 
 ;; workaround to wrong colors when running inside tmux, not needed in
 ;; emacs >= 26 or when a color theme is used
