@@ -953,6 +953,9 @@
       ada-which-compiler 'generic
       ada-fill-comment-prefix "-- ")
 
+;; use octave-mode for files with extension .m
+(add-to-list 'auto-mode-alist '("\\.m$" . octave-mode))
+
 ;; don't ask when loading files with some file local variables
 (setq safe-local-variable-values '((org-confirm-babel:evaluate . nil)))
 
@@ -1658,18 +1661,22 @@
 ;; - show previously shown buffers in the window: switch-to-(prev|next)-buffer
 ;;
 ;; - calc:
-;;   - prefix C-x *
-;;     - help: ? ?
-;;     - copy to buffer: y
+;;   - usage in calc mode
+;;     - toggle showing stack window (calc-trail-display): t d
+;;     - change display radix: d r
+;;     - insert number in a diferent radix, ex: 16#deadbeef
+;;     - algebraic input: '
+;;     - negate: n
+;;     - swap last two values: TAB
+;;     - empty stack: C-x * 0
+;;   - from any buffer prefixed by C-x *
+;;     - quick algebraic calculation: q
 ;;     - embedded formula, or return to editing buffer: e
 ;;     - embedded word: w
 ;;     - grab region into calc: g
-;;     - quick algebraic calculation: q
-;;     - empty stack: 0
-;;     - negate: n
-;;     - swap last two values: TAB
-;;   - usage
-;;     - algebraic input: '
+;;   - both in calc mode or in another buffer with prefix
+;;     - help: ? ?
+;;     - yank to buffer: y
 ;;
 ;; - org-mode
 ;;   - hierarchy
