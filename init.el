@@ -519,6 +519,9 @@
 
 ;; default fonts
 (defvar cfg-font-ttf "monospace-10")
+(when (eq system-type 'windows-nt)
+  (setq cfg-font-ttf "Consolas 10"))
+
 (defvar cfg-font-x "-misc-fixed-medium-r-normal--*-*-*-*-*-90-iso8859-*")
 
 ;; settings loaded from local.el
@@ -529,7 +532,7 @@
 ;;       cfg-font-x "-*-terminus-medium-r-*-*-*-*-*-*-*-60-iso8859-*")
 
 ;; example of local.el for Ms Windows:
-;; (setq cfg-font-ttf "Consolas 10")
+;; (setq cfg-font-ttf "Consolas 9")
 ;; (setenv "PATH"
 ;;         (concat "C:/Program Files/Git/usr/bin" ";" (getenv "PATH")))
 
