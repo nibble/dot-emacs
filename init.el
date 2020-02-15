@@ -28,6 +28,12 @@
   ;; prevent writing package-selected-packages custom variable
   (defun package--save-selected-packages (&optional value) nil)
 
+  ;; disable TLS 1.3 support on emacs < 26.3 as workaround to
+  ;; https://debbugs.gnu.org/cgi/bugreport.cgi?bug=34341
+  (when (or (< emacs-major-version 26)
+            (and (= emacs-major-version 26) (< emacs-minor-version 3)))
+    (setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3"))
+
   ;; disable repository signature check (uncomment if needed)
   ;; (setq package-check-signature nil)
 
