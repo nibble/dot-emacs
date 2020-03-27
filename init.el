@@ -351,8 +351,7 @@
    'zenburn
    `(highlight    ((t (:background "#494949"))))  ; zenburn-bg+05
    `(hl-line      ((t (:background "#494949"))))  ; zenburn-bg+05
-   `(org-level-2  ((t (:foreground "#93E0E3"))))  ; zenburn-cyan
-   `(org-level-3  ((t (:foreground "#9C6363"))))  ; zenburn-red-3
+   `(org-level-7  ((t (:foreground "#ECB3B3"))))  ; zenburn-red+2
    `(org-archived ((t (:foreground "#656555"))))  ; zenburn-fg-1
    ))
 
