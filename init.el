@@ -343,10 +343,13 @@
     (setq magit-display-file-buffer-function 'my/magit-display-file-buffer))
   )
 
-;; load and configure zenburn theme
+;; tsdh-light default light theme
+;; (load-theme 'tsdh-light)
+
+;; zenburn low contrast dark theme
 (use-package zenburn-theme :ensure t
+  :defer t
   :config
-  (load-theme 'zenburn t)
   (custom-theme-set-faces
    'zenburn
    `(highlight    ((t (:background "#494949"))))  ; zenburn-bg+05
@@ -354,6 +357,24 @@
    `(org-level-7  ((t (:foreground "#ECB3B3"))))  ; zenburn-red+2
    `(org-archived ((t (:foreground "#656555"))))  ; zenburn-fg-1
    ))
+
+;; modus-operandi light theme
+(use-package modus-operandi-theme :ensure t
+  ;; :defer t
+  :init
+  (setq modus-operandi-theme-fringes 'subtle
+        modus-operandi-theme-intense-paren-match t
+        modus-operandi-theme-rainbow-headings t
+        ))
+
+;; modus-vivendi dark theme
+(use-package modus-vivendi-theme :ensure t
+  :defer t
+  :init
+  (setq modus-vivendi-theme-fringes 'subtle
+        modus-vivendi-theme-intense-paren-match t
+        modus-vivendi-theme-rainbow-headings t
+        ))
 
 ;; load and configure graphviz mode
 (use-package graphviz-dot-mode :ensure t
@@ -1665,10 +1686,15 @@
 ;;
 ;; - show previously shown buffers in the window: switch-to-(prev|next)-buffer
 ;;
-;; - calc:
+;; - calc
+;;   - launch
+;;     - Window at the bottom of the frame: M-x calc
+;;     - Whole frame: M-x full-calc
+;;     - Whole frame with buttons for mathematical functions: M-x full-calc-keypad
 ;;   - usage in calc mode
 ;;     - toggle showing stack window (calc-trail-display): t d
-;;     - change display radix: d r
+;;     - change display radix, ex: d r 16
+;;     - insert number in the current radix when it needs letters: #deadbeef
 ;;     - insert number in a diferent radix, ex: 16#deadbeef
 ;;     - algebraic input: '
 ;;     - negate: n
