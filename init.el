@@ -343,9 +343,6 @@
     (setq magit-display-file-buffer-function 'my/magit-display-file-buffer))
   )
 
-;; tsdh-light default light theme
-;; (load-theme 'tsdh-light)
-
 ;; zenburn low contrast dark theme
 (use-package zenburn-theme :ensure t
   :defer t
@@ -359,22 +356,24 @@
    ))
 
 ;; modus-operandi light theme
-(use-package modus-operandi-theme :ensure t
-  ;; :defer t
-  :init
-  (setq modus-operandi-theme-fringes 'subtle
-        modus-operandi-theme-intense-paren-match t
-        modus-operandi-theme-rainbow-headings t
-        ))
+(when (>= emacs-major-version 26)
+  (use-package modus-operandi-theme :ensure t
+    ;; :defer t
+    :init
+    (setq modus-operandi-theme-fringes 'subtle
+          modus-operandi-theme-intense-paren-match t
+          modus-operandi-theme-rainbow-headings t
+          )))
 
 ;; modus-vivendi dark theme
-(use-package modus-vivendi-theme :ensure t
-  :defer t
-  :init
-  (setq modus-vivendi-theme-fringes 'subtle
-        modus-vivendi-theme-intense-paren-match t
-        modus-vivendi-theme-rainbow-headings t
-        ))
+(when (>= emacs-major-version 26)
+  (use-package modus-vivendi-theme :ensure t
+    :defer t
+    :init
+    (setq modus-vivendi-theme-fringes 'subtle
+          modus-vivendi-theme-intense-paren-match t
+          modus-vivendi-theme-rainbow-headings t
+          )))
 
 ;; load and configure graphviz mode
 (use-package graphviz-dot-mode :ensure t
