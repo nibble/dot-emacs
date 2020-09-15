@@ -444,6 +444,10 @@
   (use-package racket-mode :ensure t
     :defer t))
 
+;; forth mode
+(use-package forth-mode :ensure t
+  :defer t)
+
 ;; golang mode
 (use-package go-mode :ensure t
   :defer t)
