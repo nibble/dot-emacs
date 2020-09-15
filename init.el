@@ -440,8 +440,9 @@
     ("C-x v t" . counsel-git-timemachine)))
 
 ;; racket mode
-(use-package racket-mode :ensure t
-  :defer t)
+(when (>= emacs-major-version 25)
+  (use-package racket-mode :ensure t
+    :defer t))
 
 ;; golang mode
 (use-package go-mode :ensure t
