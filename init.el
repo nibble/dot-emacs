@@ -881,9 +881,12 @@
       (setq ggtags-highlight-tag nil)  ; deactivated because it is too slow in windows
       (setq ggtags-oversize-limit (* 1 1024 1024))  ; reduce threshold to update whole GTAGS
       (setq counsel--git-grep-count-threshold -1)  ; don't preload every git grep result on invocation, terrible for huge repos
-      ;; (global-set-key (kbd "C-c k") 'counsel-ag)  ; in windows it seems to be faster than rg; deactivated: it hangs even more
       (when (>= emacs-major-version 25)
         (setq inhibit-compacting-font-caches t))  ; mitigate slowdowns with undisplayable unicode chars
+      ;;
+      ;; replace find with rg so counsel-file-jump works in Windows (need rg.exe in %PATH%)
+      (setq find-program "rg")
+      (setq counsel-file-jump-args (split-string "--files --no-ignore ."))
       ;;
       ;; workaround if common unix commands or git can't be run (ex: magit)
       ;; (setq explicit-shell-file-name
