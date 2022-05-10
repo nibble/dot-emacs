@@ -1529,6 +1529,10 @@
 ;;
 ;; - emacs lisp interactive prompt (inferior emacs lisp mode): ielm
 ;;
+;; - find out which packages require the given one. evaluate this sexp
+;;   adjusting cl as needed:
+;;   (progn (require 'loadhist) (file-dependents (feature-file 'cl)))
+;;
 ;; - show differences between a buffer and its saved file: diff-buffer-with-file
 ;;
 ;; - copy the buffer for different outline/narrow: M-x clone-indirect-buffer

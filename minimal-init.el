@@ -28,10 +28,10 @@
 
 (windmove-default-keybindings)
 
-(global-set-key [?\M-;] 'comment-or-uncomment-region)
+(global-set-key [?\M-\;] 'comment-or-uncomment-region)
 (global-set-key [?\M-_] 'dabbrev-expand)
 
-;; workaround to wrong colors when running inside tmux, not needed in
+;; Workaround to wrong colors when running inside tmux, not needed for
 ;; emacs >= 26 or when a color theme is used
 (when (and (< emacs-major-version 26) (not (display-graphic-p)))
   (setq frame-background-mode 'light)
