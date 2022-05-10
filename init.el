@@ -473,6 +473,7 @@
   :defer t)
 
 ;; zoom-frm (local lisp files) to zoom whole frame instead of buffer text
+(setq byte-compile-warnings '((not cl-functions)))
 (use-package frame-fns)
 (use-package frame-cmds)
 (use-package zoom-frm
