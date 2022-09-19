@@ -3,10 +3,10 @@
 ;;--------------------------------------------------------------------
 
 ;;--------------------------------------------------------------------
-;;  configurations that have to be applied before a library is loaded
+;;  initial configurations
 ;;--------------------------------------------------------------------
 
-;; undo some of the winluser-friendly changes introduced in emacs23
+;; undo some of the usability changes introduced in emacs23
 (when (>= emacs-major-version 23)
   (setq transient-mark-mode nil
         shift-select-mode nil
@@ -22,30 +22,35 @@
   (make-directory user-emacs-cache-directory nil))
 
 ;; elpa
-(when (>= emacs-major-version 24)
-  (require 'package)
+(require 'package)
 
-  ;; prevent writing package-selected-packages custom variable
-  (defun package--save-selected-packages (&optional value) nil)
+;; prevent writing package-selected-packages custom variable
+(defun package--save-selected-packages (&optional value) nil)
 
-  ;; disable TLS 1.3 support on emacs < 26.3 as workaround to
-  ;; https://debbugs.gnu.org/cgi/bugreport.cgi?bug=34341
-  (when (or (< emacs-major-version 26)
-            (and (= emacs-major-version 26) (< emacs-minor-version 3)))
-    (setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3"))
+;; disable TLS 1.3 support on emacs < 26.3 as workaround to
+;; https://debbugs.gnu.org/cgi/bugreport.cgi?bug=34341
+(when (or (< emacs-major-version 26)
+          (and (= emacs-major-version 26) (< emacs-minor-version 3)))
+  (setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3"))
 
-  ;; disable repository signature check (uncomment if needed)
-  ;; (setq package-check-signature nil)
+;; disable repository signature check (uncomment if needed)
+;; (setq package-check-signature nil)
 
-  ;; set repositories
-  (setq package-archives
-        '(("gnu" . "https://elpa.gnu.org/packages/")
-          ("melpa-stable" . "https://stable.melpa.org/packages/")
-          ("melpa" . "https://melpa.org/packages/")
-          ("org" . "https://orgmode.org/elpa/")))
+;; set repositories
+(setq package-archives
+      '(("gnu" . "https://elpa.gnu.org/packages/")
+        ("melpa-stable" . "https://stable.melpa.org/packages/")
+        ("melpa" . "https://melpa.org/packages/")))
 
-  (package-initialize)
-  (setq package-enable-at-startup nil))
+(package-initialize)
+(setq package-enable-at-startup nil)
+
+;; provide a way to ensure the built-in version of a package is ignored, so it
+;; can be installed by use-package
+;; https://github.com/jwiegley/use-package/issues/955#issuecomment-1183003690
+(defun my/ignore-builtin (pkg)
+  (assq-delete-all pkg package--builtins)
+  (assq-delete-all pkg package--builtin-versions))
 
 ;; force a package refresh when the first package of a session is installed
 ;; https://github.com/jwiegley/use-package/issues/256
@@ -56,7 +61,6 @@
 
 ;; ensure use-package is installed and configure it
 (unless (package-installed-p 'use-package)
-  ;; (package-refresh-contents)
   (package-install 'use-package))
 (setq use-package-verbose nil)
 
@@ -236,9 +240,10 @@
         ledger-highlight-xact-under-point nil))
 
 ;; org-mode
+(my/ignore-builtin 'org)
 (use-package org
-  :ensure org-plus-contrib
-  :pin org
+  :ensure t
+  :pin gnu
   :mode ("\\.org$" . org-mode)
   :config
   ;; increase number of lines in which emphasis markup will be applied
