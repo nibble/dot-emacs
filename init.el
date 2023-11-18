@@ -48,6 +48,7 @@
 ;; provide a way to ensure the built-in version of a package is ignored, so it
 ;; can be installed by use-package
 ;; https://github.com/jwiegley/use-package/issues/955#issuecomment-1183003690
+;; usage example: (my/ignore-builtin 'org) (use-package org :ensure t :pin gnu)
 (defun my/ignore-builtin (pkg)
   (assq-delete-all pkg package--builtins)
   (assq-delete-all pkg package--builtin-versions))
@@ -240,10 +241,7 @@
         ledger-highlight-xact-under-point nil))
 
 ;; org-mode
-(my/ignore-builtin 'org)
 (use-package org
-  :ensure t
-  :pin gnu
   :mode ("\\.org$" . org-mode)
   :config
   ;; increase number of lines in which emphasis markup will be applied
