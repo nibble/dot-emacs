@@ -359,24 +359,22 @@
    ))
 
 ;; modus-operandi light theme
-(when (>= emacs-major-version 26)
-  (use-package modus-operandi-theme :ensure t
-    ;; :defer t
-    :init
+(if (>= emacs-major-version 28)
+  (use-package emacs
+    :config
+    (require-theme 'modus-themes)
     (setq modus-operandi-theme-fringes 'subtle
           modus-operandi-theme-intense-paren-match t
-          modus-operandi-theme-rainbow-headings t
-          )))
-
-;; modus-vivendi dark theme
-(when (>= emacs-major-version 26)
-  (use-package modus-vivendi-theme :ensure t
-    :defer t
-    :init
-    (setq modus-vivendi-theme-fringes 'subtle
-          modus-vivendi-theme-intense-paren-match t
-          modus-vivendi-theme-rainbow-headings t
-          )))
+          modus-operandi-theme-rainbow-headings t)
+    (load-theme 'modus-operandi))
+  (when (>= emacs-major-version 26)
+    (use-package modus-themes
+      :ensure t
+      :config
+      (setq modus-operandi-theme-fringes 'subtle
+            modus-operandi-theme-intense-paren-match t
+            modus-operandi-theme-rainbow-headings t)
+      (load-theme 'modus-operandi))))
 
 ;; load and configure graphviz mode
 (use-package graphviz-dot-mode :ensure t
