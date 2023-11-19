@@ -6,20 +6,12 @@
 ;;  initial configurations
 ;;--------------------------------------------------------------------
 
-;; undo some of the usability changes introduced in emacs23
-(when (>= emacs-major-version 23)
-  (setq transient-mark-mode nil
-        shift-select-mode nil
-        org-replace-disputed-keys t
-        initial-scratch-message nil))
+;; load early-init.el manually if needed
+(when (< emacs-major-version 27)
+  (require 'early-init (expand-file-name "early-init.el" user-emacs-directory)))
 
 ;; add to the load-path local directory for dropped-in elisp files
 (add-to-list 'load-path (expand-file-name "lisp/" user-emacs-directory))
-
-;; ensure ~/.emacs.d/cache directory exists
-(setq user-emacs-cache-directory (expand-file-name "cache/" user-emacs-directory))
-(when (not (file-directory-p user-emacs-cache-directory))
-  (make-directory user-emacs-cache-directory nil))
 
 ;; elpa
 (require 'package)
@@ -187,11 +179,9 @@
       (save-place-mode 1)
     (setq-default save-place t)))
 
-;; use nyan cat modeline indication instead of scrollbars
+;; nyan cat modeline indication
 (use-package nyan-mode :ensure t
   :config
-  (when (boundp 'scroll-bar-mode)
-    (scroll-bar-mode -1))
   (setq nyan-bar-length 10)
   (nyan-mode t))
 
@@ -549,32 +539,13 @@
 ;;  local settings in ~/.emacs.d/local.el file
 ;;--------------------------------------------------------------------
 
-;; default fonts
-(defvar cfg-font-ttf "monospace-10")
-(when (eq system-type 'windows-nt)
-  (setq cfg-font-ttf "Consolas 10"))
-
-(defvar cfg-font-x "-misc-fixed-medium-r-normal--*-*-*-*-*-90-iso8859-*")
-
 ;; settings loaded from local.el
 (load (expand-file-name "local.el" user-emacs-directory) t)
-
-;; example of local.el:
-;; (setq cfg-font-ttf "inconsolata-10"
-;;       cfg-font-x "-*-terminus-medium-r-*-*-*-*-*-*-*-60-iso8859-*")
 
 ;; example of local.el for Ms Windows:
 ;; (setq cfg-font-ttf "Consolas 9")
 ;; (setenv "PATH"
 ;;         (concat "C:/Program Files/Git/usr/bin" ";" (getenv "PATH")))
-
-;; set selected font
-(cond ((>= emacs-major-version 23)
-       (add-to-list 'default-frame-alist `(font . ,cfg-font-ttf)))
-      ((>= emacs-major-version 22)
-       (add-to-list 'default-frame-alist `(font . ,cfg-font-x)))
-      ((window-system)
-       (set-face-font 'default cfg-font-x)))
 
 
 ;;--------------------------------------------------------------------
@@ -592,6 +563,13 @@
 ;;--------------------------------------------------------------------
 ;;  miscellaneous settings
 ;;--------------------------------------------------------------------
+
+;; undo some of the usability changes introduced in emacs23
+(when (>= emacs-major-version 23)
+  (setq transient-mark-mode nil
+        shift-select-mode nil
+        org-replace-disputed-keys t
+        initial-scratch-message nil))
 
 ;; enable CUA mode, with as much of its functionality as possible
 ;; disabled, to get column editing functionality in emacs < 24.4
@@ -632,15 +610,8 @@
     ))
 (add-hook 'server-switch-hook 'my/px-raise-frame-and-give-focus)
 
-;; frame title format "name of buffer [emacsXY]"
-(setq frame-title-format (format "%%b [emacs%d]" emacs-major-version))
-
-;; hide the menu
-(menu-bar-mode -1)
-
-;; hide the tool bar, protected because emacs could be compiled without X
-(when (boundp 'tool-bar-mode)
-  (ignore-errors (tool-bar-mode -1)))
+;; frame title format "name of buffer |emacsXY"
+(setq frame-title-format (format "%%b |emacs%d" emacs-major-version))
 
 ;; cursor doesn't blink
 (blink-cursor-mode -1)
@@ -784,9 +755,6 @@
 
 ;; always leave some lines of context when the cursor is moved to the top/bottom
 (setq scroll-margin 2)
-
-;; drag scrollbar with left mouse button, for athena toolkit
-(global-set-key [vertical-scroll-bar down-mouse-1] 'scroll-bar-drag)
 
 ;; middle mouse button paste at cursor position instead of mouse position
 (setq mouse-yank-at-point t)

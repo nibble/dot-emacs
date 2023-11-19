@@ -6,6 +6,15 @@
 ;;   #!/bin/sh
 ;;   exec emacs -Q -nw -l ~/.emacs.d/minimal-init.el $*
 
+;; Set eln-cache location inside ~/.emacs.d/cache
+(when (boundp 'native-comp-eln-load-path)
+  (setq user-emacs-cache-directory (expand-file-name "cache/" user-emacs-directory))
+  (if (>= emacs-major-version 29)
+      (startup-redirect-eln-cache (expand-file-name "eln-cache/" user-emacs-cache-directory))
+    (setcar native-comp-eln-load-path (expand-file-name "eln-cache/" user-emacs-cache-directory))))
+
+;; Usability settings
+
 (setq-default indent-tabs-mode nil)
 
 (setq make-backup-files nil
