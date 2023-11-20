@@ -112,7 +112,6 @@
 ;; easy-kill replaces M-w with different actions, ? for help
 (use-package easy-kill :ensure t
   :config
-  (setq transient-mark-mode t)  ; unfortunately it doesn't work if disabled :(
   (global-set-key [remap kill-ring-save] #'easy-kill)
   (global-set-key [remap mark-sexp] #'easy-mark)
   ;; use word-strictly to select whole words even if subword-mode is active
@@ -566,8 +565,8 @@
 
 ;; undo some of the usability changes introduced in emacs23
 (when (>= emacs-major-version 23)
-  (setq transient-mark-mode nil
-        shift-select-mode nil
+  ; (setq transient-mark-mode nil)  ;; cannot disable as it is needed by easy-kill
+  (setq shift-select-mode nil
         org-replace-disputed-keys t
         initial-scratch-message nil))
 
