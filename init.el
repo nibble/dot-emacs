@@ -539,6 +539,13 @@
 (use-package git-gutter-fringe :ensure t
   :if (boundp 'fringe-mode))
 
+;; countdown timer
+(use-package countdown :ensure t
+  :defer t)
+
+;; stopwatch (local lisp files)
+(use-package stopwatch)
+
 
 ;;--------------------------------------------------------------------
 ;;  local settings in ~/.emacs.d/local.el file
