@@ -11,11 +11,12 @@
 ;; Premature redisplays can substantially affect startup times and produce ugly
 ;; flashes of unstyled Emacs, so it is disabled
 
-;; For the first execution of emacs, it is recommended to comment these two
-;; lines because it can take several minutes while packages are automatically
-;; downloaded and installed by use-package
-(setq-default inhibit-redisplay t
-              inhibit-message t)
+;; Disable redisplay, but only if the elpa directory exists so it is not
+;; disabled for the first execution of emacs when startup takes several minutes
+;; while packages are automatically downloaded and installed
+(when (file-directory-p (expand-file-name "elpa/" user-emacs-directory))
+  (setq-default inhibit-redisplay t
+                inhibit-message t))
 
 ;; Re-enable redisplay after startup
 (add-hook 'window-setup-hook
