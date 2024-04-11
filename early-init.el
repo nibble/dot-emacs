@@ -8,6 +8,22 @@
 ;; Settings needed before initialization
 ;;--------------------------------------------------------------------
 
+;; Premature redisplays can substantially affect startup times and produce ugly
+;; flashes of unstyled Emacs, so it is disabled
+
+;; For the first execution of emacs, it is recommended to comment these two
+;; lines because it can take several minutes while packages are automatically
+;; downloaded and installed by use-package
+(setq-default inhibit-redisplay t
+              inhibit-message t)
+
+;; Re-enable redisplay after startup
+(add-hook 'window-setup-hook
+          (lambda ()
+            (setq-default inhibit-redisplay nil
+                          inhibit-message nil)
+            (redisplay)))
+
 ;; Defer garbage collection
 (setq gc-cons-threshold most-positive-fixnum)
 (add-hook 'emacs-startup-hook
@@ -59,13 +75,3 @@
        (add-to-list 'default-frame-alist `(font . ,cfg-font-x)))
       ((window-system)
        (set-face-font 'default cfg-font-x)))
-
-;; Premature redisplays can substantially affect startup times and produce ugly
-;; flashes of unstyled Emacs
-(setq-default inhibit-redisplay t
-              inhibit-message t)
-(add-hook 'window-setup-hook
-          (lambda ()
-            (setq-default inhibit-redisplay nil
-                          inhibit-message nil)
-            (redisplay)))

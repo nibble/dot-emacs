@@ -37,6 +37,9 @@
 (package-initialize)
 (setq package-enable-at-startup nil)
 
+;; allow upgrade of built-in packages
+(setq package-install-upgrade-built-in t)
+
 ;; provide a way to ensure the built-in version of a package is ignored, so it
 ;; can be installed by use-package
 ;; https://github.com/jwiegley/use-package/issues/955#issuecomment-1183003690
@@ -320,6 +323,9 @@
   (use-package transient :ensure t
     :defer t
     :init
+    ;; reload seq to ensure package from elpa is used instead of the built-in
+    (progn (unload-feature 'seq t) (require 'seq))
+    ;; set location of cache files
     (setq transient-levels-file (expand-file-name "transient/levels.el" user-emacs-cache-directory)
           transient-values-file (expand-file-name "transient/values.el" user-emacs-cache-directory)
           transient-history-file (expand-file-name "transient/history.el" user-emacs-cache-directory)))
@@ -1473,6 +1479,8 @@
 ;; - interactive functions to find or set configs:
 ;;     describe-variable, set-variable, describe-function,
 ;;     describe-key, find-library, find-function, find-variable
+;;
+;; - list recent keystrokes: M-x view-lossage
 ;;
 ;; - which variable holds given value: apropos-value
 ;;
