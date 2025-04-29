@@ -66,7 +66,7 @@
 (load (expand-file-name "local-early.el" user-emacs-directory) t)
 
 ;; Example of local-early.el:
-;; (setq cfg-font-ttf "inconsolata-10"
+;; (setq cfg-font-ttf "DejaVu Sans Mono 11"
 ;;       cfg-font-x "-*-terminus-medium-r-*-*-*-*-*-*-*-60-iso8859-*")
 
 ;; Set selected font

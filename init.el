@@ -6,6 +6,8 @@
 ;;  initial configurations
 ;;--------------------------------------------------------------------
 
+;; see also early-init.el
+
 ;; load early-init.el manually if needed
 (when (< emacs-major-version 27)
   (require 'early-init (expand-file-name "early-init.el" user-emacs-directory)))
@@ -545,19 +547,6 @@
 
 ;; stopwatch (local lisp files)
 (use-package stopwatch)
-
-
-;;--------------------------------------------------------------------
-;;  local settings in ~/.emacs.d/local.el file
-;;--------------------------------------------------------------------
-
-;; settings loaded from local.el
-(load (expand-file-name "local.el" user-emacs-directory) t)
-
-;; example of local.el for Ms Windows:
-;; (setq cfg-font-ttf "Consolas 9")
-;; (setenv "PATH"
-;;         (concat "C:/Program Files/Git/usr/bin" ";" (getenv "PATH")))
 
 
 ;;--------------------------------------------------------------------
