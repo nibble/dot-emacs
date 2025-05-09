@@ -262,7 +262,12 @@
   ;; enable org-babel languages
   (org-babel-do-load-languages 'org-babel-load-languages
                                '(;; other Babel languages
-                                 (plantuml . t))))
+                                 (plantuml . t)))
+  ;; keep global keybindings for enlarge|shrink-window also in org-mode
+  (define-key org-mode-map (kbd "S-C-<left>") 'shrink-window-horizontally)
+  (define-key org-mode-map (kbd "S-C-<right>") 'enlarge-window-horizontally)
+  (define-key org-mode-map (kbd "S-C-<down>") 'shrink-window)
+  (define-key org-mode-map (kbd "S-C-<up>") 'enlarge-window))
 
 ;; htmlize is used by org-mode on export to syntax highlight source code blocks
 (use-package htmlize :ensure t
