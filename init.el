@@ -21,6 +21,12 @@
 ;; prevent writing package-selected-packages custom variable
 (defun package--save-selected-packages (&optional value) nil)
 
+;; relocate file network-security.data
+(setq nsm-settings-file (expand-file-name "network-security.data" user-emacs-cache-directory))
+
+;; relocate org-persist directory
+(setq org-persist-directory (expand-file-name "org-persist" user-emacs-cache-directory))
+
 ;; disable TLS 1.3 support on emacs < 26.3 as workaround to
 ;; https://debbugs.gnu.org/cgi/bugreport.cgi?bug=34341
 (when (or (< emacs-major-version 26)
@@ -1473,6 +1479,9 @@
 ;;--------------------------------------------------------------------
 ;;  notes and reminders
 ;;--------------------------------------------------------------------
+;;
+;; - show backtrace on error in the *Messages* buffer
+;;   (setq debug-on-error t)
 ;;
 ;; - recompile .elc files after major emacs version change:
 ;;   (byte-recompile-directory package-user-dir nil 'force)
