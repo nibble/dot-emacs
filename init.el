@@ -817,6 +817,9 @@
 (setq dired-omit-files
       (concat dired-omit-files "\\|^\\..+$"))
 
+;; enable character folding on searches so that accented letters are matched
+(setq search-default-mode #'char-fold-to-regexp)
+
 ;; dabbrev completion matches case
 (setq dabbrev-case-fold-search nil
       dabbrev-case-replace nil)
